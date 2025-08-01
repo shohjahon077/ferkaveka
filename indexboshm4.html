@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neon Video Kartochka</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: 'Segoe UI', sans-serif;
+      background: radial-gradient(circle at top left, #2c0000, #0f0000);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .card {
+      position: relative;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 30px;
+      padding: 20px;
+      width: 100%;
+      max-width: 600px;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 0 30px rgba(255, 0, 0, 0.4);
+      border: 2px solid rgba(255, 0, 0, 0.4);
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(45deg, red, crimson, darkred, crimson);
+      z-index: -1;
+      filter: blur(10px);
+      animation: borderRotate 10s linear infinite;
+    }
+
+    @keyframes borderRotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .label-float {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      background: crimson;
+      padding: 4px 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      animation: float 3s infinite ease-in-out;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+      100% { transform: translateY(0); }
+    }
+
+    video {
+      width: 100%;
+      border-radius: 20px;
+      border: 1px solid crimson;
+    }
+
+    .progress-bar {
+      margin-top: 6px;
+      height: 6px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      width: 80%;
+      height: 100%;
+      background: crimson;
+      animation: progressAnim 6s ease-in-out infinite;
+    }
+
+    @keyframes progressAnim {
+      0% { width: 0%; }
+      100% { width: 80%; }
+    }
+
+    .muted-indicator {
+      margin-top: 6px;
+      font-size: 12px;
+      opacity: 0.7;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 12px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .actions span {
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 8px 12px;
+      border-radius: 12px;
+      transition: all 0.3s;
+      font-size: 15px;
+    }
+
+    .actions span:hover {
+      background: crimson;
+      transform: scale(1.1);
+    }
+
+    .like-button {
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+
+    .comments {
+      margin-top: 15px;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 10px;
+      border-radius: 12px;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+
+    .comment {
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+
+    .comment-input {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .comment-input input {
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      margin-bottom: 8px;
+    }
+
+    .comment-input button {
+      padding: 10px;
+      background-color: crimson;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .comment-input button:hover {
+      background-color: darkred;
+    }
+
+    .message {
+      margin-top: 8px;
+      font-size: 14px;
+      color: lightgreen;
+      display: none;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     .buttons {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      margin-top: 15px;
+      gap: 10px;
+    }
+
+    .btn {
+      flex: 1 1 45%;
+      background-color: darkred;
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: 0.3s ease;
+      text-align: center;
+    }
+
+    .btn:hover {
+      background-color: crimson;
+    }
+
+    .back-btn {
+      background-color: #ffa500;
+      color: black;
+      margin-top: 15px;
+      flex: 1 1 100%;
+    }
+
+   
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="label-float">🔥 TREND</div>
+    <video controls muted>
+      <source src="IMG_5825.MOV" type="video/mp4">
+      Brauzeringiz videoni qo‘llab-quvvatlamaydi.
+    </video>
+
+    <div class="progress-bar">
+      <div class="progress-fill"></div>
+    </div>
+
+    <div class="muted-indicator">🔇 Tovush yo‘q</div>
+
+    <div class="actions">
+      <span class="like-button">❤️ Like</span>
+      <span>👎 Dislike</span>
+      <a href="index4.html"><span style="background-color: darkred">🚩 Shikoyat</span></a>
+    </div>
+
+    <div class="comments">
+      <div class="comment">Ali - Zo‘r video!</div>
+      <div class="comment">Lola - 😂 Qotdim!</div>
+    </div>
+
+    <div class="comment-input">
+      <input type="text" placeholder="Izoh qoldiring..." id="commentInput">
+      <button onclick="document.getElementById('confirmation').style.display='block'">Yuborish</button>
+      <div class="message" id="confirmation">✅ Izoh yuborildi!</div>
+      <a href="index.html"><button class="btn back-btn" onclick="history.back()">⬅ Orqaga qaytish</button></a>
+    </div>
+  </div>
+</body>
+</html>
