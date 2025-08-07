@@ -1,26 +1,211 @@
 <!DOCTYPE html>
 <html lang="uz">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>FERKAVEKA</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="style.css">
+<title>FERKAVEKA - Hamburger Menyu</title>
+<style>
+ 
+</style>
 </head>
 <body>
-  <div class="intro" id="intro">
+
+<nav class="navbar">
+  <div class="logo">FERKAVEKA</div>
+
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#">Bosh sahifa</a></li>
+    <li><a href="#">Yordam</a></li>
+    <li><a href="#">Aloqa</a></li>
+    <li><a href="#">Videolar</a></li>
+  </ul>
+
+  <div class="hamburger" id="hamburger">
+    <div></div>
+    <div></div>
+    <div></div>
+  </div>
+</nav>
+
+<script>
+  const hamburger = document.getElementById('hamburger');
+  const navLinks = document.getElementById('navLinks');
+
+  hamburger.addEventListener('click', () => {
+    navLinks.classList.toggle('active');
+  });
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <!-- Intro animatsiya -->
+  <div id="intro" class="intro">
     <h1 class="ferkaveka">FERKAVEKA</h1>
   </div>
 
-  <div class="main" id="main" style="display: none;">
-    <h2>FERKAVEKA Asosiy Sahifa</h2>
-    <p>Bu yerda videolar, reklamalar va boshqa kontent bo‘ladi.</p>
-  </div>
+  <!-- Kartalar konteyneri (dastlab yashirin) -->
+  <div id="cards-container" class="cards-container hidden">
+    <a href="indexboshm2.html">
+        
+        <div class="ad-card">
 
-  <script>
-    setTimeout(() => {
-      document.getElementById("intro").style.display = "none";
-      document.getElementById("main").style.display = "block";
-    }, 15000); // 15 soniyadan so‘ng asosiy sahifa ko‘rinadi
-  </script>
+      <video autoplay muted loop playsinline>
+
+        <source src="IMG_8857.MOV" type="video/mp4" />
+
+        Brauzeringiz video qo‘llab-quvvatlamaydi.
+
+      </video>
+
+      <div class="text-overlay">
+
+        <h2>🔥 Reklama 1</h2>
+
+        <p>Ko‘rib qoling!</p>
+
+      </div>
+
+      <div class="bottom-line"></div>
+
+    </div>
+
+</a>
+
+
+
+
+
+
+    <a href="indexboshm3.html">
+
+        <div class="ad-card">
+      <video autoplay muted loop playsinline>
+        <source src="video5208667969852315182.mp4" type="video/mp4" />
+      </video>
+      <div class="text-overlay">
+        <h2>🔥 Reklama 2</h2>
+        <p>Tomosha qiling!</p>
+      </div>
+      <div class="bottom-line"></div>
+    </div>
+
+    </a>
+
+
+
+    <a href="indexboshm4.html">
+        <div class="ad-card">
+      <video autoplay muted loop playsinline>
+        <source src="IMG_6735.MOV" type="video/mp4" />
+      </video>
+      <div class="text-overlay">
+        <h2>🔥 Reklama 3</h2>
+        <p>Yoqtiring!</p>
+      </div>
+      <div class="bottom-line"></div>
+    </div>
+    </a>
+    
+
+
+
+    <a href="indexboshm5.html">
+         <div class="ad-card">
+      <video autoplay muted loop playsinline>
+        <source src="IMG_6616.MOV" type="video/mp4" />
+      </video>
+      <div class="text-overlay">
+        <h2>🔥 Reklama 4</h2>
+        <p>Eng zo‘r!</p>
+      </div>
+      <div class="bottom-line"></div>
+    </div>
+    </a>
+
+   
+    <a href="indexboshm6.html">
+        <div class="ad-card">
+      <video autoplay muted loop playsinline>
+        <source src="IMG_5825.MOV" type="video/mp4" />
+      </video>
+      <div class="text-overlay">
+        <h2>🔥 Reklama 5</h2>
+        <p>Tezroq ko‘ring!</p>
+      </div>
+      <div class="bottom-line"></div>
+    </div>
+  </div>
+    </a>
+    
+
+
+    <a href="indexboshm7.html">
+        <div id="cards-container" class="cards-container hidden">
+  <div class="ad-card">
+    <video autoplay muted loop playsinline>
+      <source src="IMG_5447.MOV" type="video/mp4" />
+      Brauzeringiz video qo‘llab-quvvatlamaydi.
+     </video>
+        <div class="text-overlay">
+            <h2>🔥 Reklama 6</h2>
+            <p>Ko‘rib qoling!</p>
+        </div>
+        <div class="bottom-line"></div>
+        </div>
+    </a>
+
+
+
+
+
+
+    <a href="indexboshm8.html">
+          <div class="ad-card">
+    <video autoplay muted loop playsinline>
+      <source src="IMG_5242.MOV" type="video/mp4" />
+    </video>
+    <div class="text-overlay">
+      <h2>🔥 Reklama 7</h2>
+      <p>Tomosha qiling!</p>
+    </div>
+    <div class="bottom-line"></div>
+  </div>
+    </a>
+
+
+
+
+
+  
+
+
+    <a href="indexboshm1.html">
+        <div class="ad-card">
+    <video autoplay muted loop playsinline>
+      <source src="IMG_5039.MOV" type="video/mp4" />
+    </video>
+        <div class="text-overlay">
+        <h2>🔥 Reklama 8</h2>
+        <p>Yoqtiring!</p>
+        </div>
+        <div class="bottom-line"></div>
+        </div>
+    </a>
+
+
+  <script src="script.js"></script>
 </body>
 </html>
