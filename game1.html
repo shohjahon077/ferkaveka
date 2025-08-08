@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ferkaveka - O'yinlar</title>
+<style>
+  :root {
+    --color-bg-light: #f0f0f5;
+    --color-text-light: #333;
+    --color-bg-dark: #121212;
+    --color-text-dark: #eee;
+    --color-primary: #764ba2;
+    --color-primary-dark: #5a3480;
+  }
+
+  body {
+    margin: 0; padding: 0; font-family: Arial, sans-serif;
+    background: var(--color-bg-light);
+    color: var(--color-text-light);
+    transition: background 0.5s, color 0.5s;
+  }
+  body.dark {
+    background: var(--color-bg-dark);
+    color: var(--color-text-dark);
+  }
+  #loadingScreen {
+    position: fixed; top:0; left:0; width:100%; height:100%;
+    background: var(--color-primary);
+    color: white;
+    font-size: 2.5rem;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 10000;
+  }
+  #loadingScreen.hidden {
+    display: none;
+  }
+  #mainContent {
+    max-width: 1000px;
+    margin: 30px auto 50px;
+    padding: 0 20px;
+    display: none;
+  }
+  #topBar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  #searchInput {
+    flex-grow: 1;
+    min-width: 200px;
+    padding: 12px 18px;
+    font-size: 1.2rem;
+    border-radius: 12px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+  }
+  #themeToggle {
+    background: var(--color-primary);
+    border: none;
+    border-radius: 20px;
+    color: white;
+    padding: 12px 24px;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 4px 12px var(--color-primary-dark);
+    transition: background 0.3s ease;
+  }
+  #themeToggle:hover {
+    background: var(--color-primary-dark);
+  }
+
+  #gameCards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+  }
+  .card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 12px 28px rgba(118,75,162,0.25);
+    width: 280px;
+    cursor: pointer;
+    overflow: hidden;
+    user-select: none;
+    transition: transform 0.3s ease, background 0.5s, color 0.5s;
+  }
+  body.dark .card {
+    background: #222;
+    color: var(--color-text-dark);
+    box-shadow: 0 12px 28px rgba(118,75,162,0.6);
+  }
+  .card:hover {
+    transform: translateY(-10px) rotateX(10deg) rotateY(15deg);
+  }
+  .card img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+  }
+  .card-content {
+    padding: 14px 18px;
+  }
+  .card-content h3 {
+    margin: 0 0 10px;
+    color: var(--color-primary);
+  }
+  body.dark .card-content h3 {
+    color: #a57ce0;
+  }
+  .card-content p {
+    margin: 0 0 14px;
+    color: #444;
+  }
+  body.dark .card-content p {
+    color: #ccc;
+  }
+  .btnGroup, .likeGroup {
+    display: flex;
+    justify-content: space-around;
+    padding-bottom: 12px;
+    gap: 12px;
+  }
+  .btnGroup button, .likeGroup button {
+    background: var(--color-primary);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    padding: 10px 18px;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0 4px 12px var(--color-primary-dark);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    user-select: none;
+  }
+  .btnGroup button:hover, .likeGroup button:hover {
+    background-color: var(--color-primary-dark);
+    transform: scale(1.1);
+  }
+
+  #toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--color-primary);
+    color: white;
+    padding: 12px 26px;
+    border-radius: 30px;
+    font-size: 1.1rem;
+    box-shadow: 0 8px 20px var(--color-primary-dark);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    z-index: 11000;
+  }
+  #toast.show {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+  }
+  @media (max-width: 600px) {
+    #gameCards {
+      flex-direction: column;
+      align-items: center;
+    }
+    .card {
+      width: 90%;
+    }
+    
+  }
+
+
+  @keyframes gradientBG {
+  0% {background-position:0% 50%;}
+  50% {background-position:100% 50%;}
+  100% {background-position:0% 50%;}
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px) rotate(-3deg); }
+  50% { transform: translateX(6px) rotate(3deg); }
+  75% { transform: translateX(-6px) rotate(-3deg); }
+}
+</style>
+</head>
+<body>
+
+<!-- Loading animatsiyasi -->
+<div id="loadingScreen" role="alert" aria-live="assertive" style="
+  position: fixed; top:0; left:0; width:100%; height:100%;
+  background: linear-gradient(-45deg, #667eea, #764ba2, #a678d1, #4c3a87);
+  background-size: 400% 400%;
+  animation: gradientBG 8s ease infinite;
+  color: white;
+  font-size: 2.5rem;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  z-index: 10000;
+  user-select: none;
+">
+  <div id="loadingText" style="
+    animation: shake 1s ease-in-out infinite;
+    margin-bottom: 30px;
+    font-weight: 700;
+    text-shadow: 0 0 10px #d1c4e9;
+  ">Yuklanmoqda...</div>
+  <div id="progressBarContainer" style="
+    width: 70%; height: 10px; background: rgba(255,255,255,0.3);
+    border-radius: 12px; overflow: hidden;
+  ">
+    <div id="progressBar" style="
+      height: 100%; width: 0%; background: #d1c4e9; border-radius: 12px;
+      transition: width 0.2s ease;
+    "></div>
+  </div>
+</div>
+
+
+
+
+<div id="mainContent" role="main" aria-label="O'yinlar sahifasi">
+  <div id="topBar">
+    <input
+      type="search"
+      id="searchInput"
+      placeholder="O'yinlarni qidirish..."
+      aria-label="O'yinlarni qidirish"
+    />
+    <button id="themeToggle" aria-pressed="false" aria-label="Kun va tun temasini almashtirish">Tunga o‘tkazish</button>
+  </div>
+  <div id="gameCards" aria-live="polite" aria-atomic="true"></div>
+</div>
+
+<div id="toast" role="alert" aria-live="assertive"></div>
+
+<script>
+  (function(){
+    const loadingScreen = document.getElementById('loadingScreen');
+    const mainContent = document.getElementById('mainContent');
+    const gameCards = document.getElementById('gameCards');
+    const searchInput = document.getElementById('searchInput');
+    const toast = document.getElementById('toast');
+    const themeToggle = document.getElementById('themeToggle');
+
+    // Ovozlar
+    const qushSound = new Audio('https://actions.google.com/sounds/v1/animals/bird_chickadee.ogg');
+    const bronSound = new Audio('https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg');
+    const likeSound = new Audio('https://actions.google.com/sounds/v1/cartoon/pop.ogg');
+    const dislikeSound = new Audio('https://actions.google.com/sounds/v1/cartoon/boing.ogg');
+
+    // 30 ta o'yin ma'lumotlari (misol uchun)
+    const games = [];
+    for(let i=1; i<=30; i++){
+      games.push({
+        name: `O'yin #${i}`,
+        description: `Bu o'yin №${i} juda qiziqarli va foydali.`,
+        img: `https://picsum.photos/seed/game${i}/400/160`
+      });
+    }
+
+    function showToast(msg){
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2500);
+    }
+
+    function createCard(game){
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.setAttribute('tabindex', '0');
+
+      const img = document.createElement('img');
+      img.src = game.img;
+      img.alt = game.name;
+
+      const content = document.createElement('div');
+      content.className = 'card-content';
+
+      const h3 = document.createElement('h3');
+      h3.textContent = game.name;
+
+      const p = document.createElement('p');
+      p.textContent = game.description;
+
+      // Tugmalar guruhi
+      const btnGroup = document.createElement('div');
+      btnGroup.className = 'btnGroup';
+
+      const qushBtn = document.createElement('button');
+      qushBtn.textContent = 'Qush';
+      qushBtn.className = 'btn-qush';
+      qushBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        qushSound.currentTime = 0;
+        qushSound.play();
+        showToast(`${game.name}: Qush tugmasi bosildi!`);
+      });
+
+      const bronBtn = document.createElement('button');
+      bronBtn.textContent = 'Bron';
+      bronBtn.className = 'btn-bron';
+      bronBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        bronSound.currentTime = 0;
+        bronSound.play();
+        showToast(`${game.name}: Bron tugmasi bosildi!`);
+      });
+
+      btnGroup.appendChild(qushBtn);
+      btnGroup.appendChild(bronBtn);
+
+      // Like/Dislike tugmalari
+      const likeGroup = document.createElement('div');
+      likeGroup.className = 'likeGroup';
+
+      const likeBtn = document.createElement('button');
+      likeBtn.textContent = '👍 Like';
+      likeBtn.className = 'btn-like';
+      likeBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        likeSound.currentTime = 0;
+        likeSound.play();
+        showToast(`${game.name}: Like bosildi!`);
+      });
+
+      const dislikeBtn = document.createElement('button');
+      dislikeBtn.textContent = '👎 Dislike';
+      dislikeBtn.className = 'btn-dislike';
+      dislikeBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        dislikeSound.currentTime = 0;
+        dislikeSound.play();
+        showToast(`${game.name}: Dislike bosildi!`);
+      });
+
+      likeGroup.appendChild(likeBtn);
+      likeGroup.appendChild(dislikeBtn);
+
+      content.appendChild(h3);
+      content.appendChild(p);
+      content.appendChild(btnGroup);
+      content.appendChild(likeGroup);
+
+      card.appendChild(img);
+      card.appendChild(content);
+
+      return card;
+    }
+
+    function renderGames(filter = ''){
+      gameCards.innerHTML = '';
+      const filtered = games.filter(g => g.name.toLowerCase().includes(filter.toLowerCase()));
+      if(filtered.length === 0){
+        gameCards.textContent = "Hech qanday o'yin topilmadi.";
+        return;
+      }
+      filtered.forEach(game => {
+        const card = createCard(game);
+        gameCards.appendChild(card);
+      });
+    }
+
+    // Tema almashtirish
+    function toggleTheme(){
+      const isDark = document.body.classList.toggle('dark');
+      themeToggle.textContent = isDark ? "Kunga o‘tkazish" : "Tunga o‘tkazish";
+      themeToggle.setAttribute('aria-pressed', isDark);
+    }
+
+    themeToggle.addEventListener('click', toggleTheme);
+
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        loadingScreen.classList.add('hidden');
+        mainContent.style.display = 'block';
+        renderGames();
+      }, 2000);
+    });
+
+    searchInput.addEventListener('input', e => {
+      renderGames(e.target.value);
+    });
+  })();
+
+
+
+    window.addEventListener('load', () => {
+    const loadingScreen = document.getElementById('loadingScreen');
+    const mainContent = document.getElementById('mainContent'); // Qolgan sayt qismi shu IDda bo‘lishi kerak
+
+    const progressBar = document.getElementById('progressBar');
+    let width = 0;
+
+    const interval = setInterval(() => {
+      if(width >= 100){
+        clearInterval(interval);
+        loadingScreen.style.display = 'none';
+        if(mainContent) mainContent.style.display = 'block';
+      } else {
+        width += 2; // 2% har 40ms => 2*50=100%
+        progressBar.style.width = width + '%';
+      }
+    }, 40);
+  });
+
+
+</script>
+
+</body>
+</html>
