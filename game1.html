@@ -26,15 +26,28 @@
   }
   #loadingScreen {
     position: fixed; top:0; left:0; width:100%; height:100%;
-    background: var(--color-primary);
+    background: linear-gradient(-45deg, #667eea, #764ba2, #a678d1, #4c3a87);
+    background-size: 400% 400%;
+    animation: gradientBG 10s ease infinite;
     color: white;
     font-size: 2.5rem;
-    display: flex; align-items: center; justify-content: center;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
     z-index: 10000;
+    user-select: none;
   }
   #loadingScreen.hidden {
     display: none;
   }
+  #progressBarContainer {
+    width: 70%; height: 10px; background: rgba(255,255,255,0.3);
+    border-radius: 12px; overflow: hidden;
+    margin-top: 30px;
+  }
+  #progressBar {
+    height: 100%; width: 0%; background: #d1c4e9; border-radius: 12px;
+    transition: width 0.2s ease;
+  }
+
   #mainContent {
     max-width: 1000px;
     margin: 30px auto 50px;
@@ -84,10 +97,12 @@
     border-radius: 16px;
     box-shadow: 0 12px 28px rgba(118,75,162,0.25);
     width: 280px;
-    cursor: pointer;
+    cursor: default;
     overflow: hidden;
     user-select: none;
     transition: transform 0.3s ease, background 0.5s, color 0.5s;
+    display: flex;
+    flex-direction: column;
   }
   body.dark .card {
     background: #222;
@@ -101,9 +116,11 @@
     width: 100%;
     height: 160px;
     object-fit: cover;
+    pointer-events: none;
   }
   .card-content {
     padding: 14px 18px;
+    flex-grow: 1;
   }
   .card-content h3 {
     margin: 0 0 10px;
@@ -119,50 +136,30 @@
   body.dark .card-content p {
     color: #ccc;
   }
-  .btnGroup, .likeGroup {
+  .btnGroup {
+    padding: 0 18px 18px;
     display: flex;
-    justify-content: space-around;
-    padding-bottom: 12px;
-    gap: 12px;
+    justify-content: center;
   }
-  .btnGroup button, .likeGroup button {
+  .btnPlay {
     background: var(--color-primary);
     border: none;
-    border-radius: 12px;
+    border-radius: 20px;
     color: white;
-    padding: 10px 18px;
-    font-size: 1rem;
+    padding: 12px 30px;
+    font-size: 1.1rem;
     cursor: pointer;
-    box-shadow: 0 4px 12px var(--color-primary-dark);
+    font-weight: bold;
+    box-shadow: 0 5px 15px var(--color-primary-dark);
     transition: background-color 0.3s ease, transform 0.2s ease;
     user-select: none;
   }
-  .btnGroup button:hover, .likeGroup button:hover {
+  .btnPlay:hover {
     background-color: var(--color-primary-dark);
     transform: scale(1.1);
   }
 
-  #toast {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%) translateY(100px);
-    background: var(--color-primary);
-    color: white;
-    padding: 12px 26px;
-    border-radius: 30px;
-    font-size: 1.1rem;
-    box-shadow: 0 8px 20px var(--color-primary-dark);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.4s ease, transform 0.4s ease;
-    z-index: 11000;
-  }
-  #toast.show {
-    opacity: 1;
-    pointer-events: auto;
-    transform: translateX(-50%) translateY(0);
-  }
+
   @media (max-width: 600px) {
     #gameCards {
       flex-direction: column;
@@ -170,59 +167,43 @@
     }
     .card {
       width: 90%;
-    }
     
+    }
+
   }
 
 
-  @keyframes gradientBG {
-  0% {background-position:0% 50%;}
-  50% {background-position:100% 50%;}
-  100% {background-position:0% 50%;}
-}
 
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-6px) rotate(-3deg); }
-  50% { transform: translateX(6px) rotate(3deg); }
-  75% { transform: translateX(-6px) rotate(-3deg); }
-}
+  @keyframes gradientBG {
+    0% {background-position:0% 50%;}
+    50% {background-position:100% 50%;}
+    100% {background-position:0% 50%;}
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px) rotate(-3deg); }
+    50% { transform: translateX(6px) rotate(3deg); }
+    75% { transform: translateX(-6px) rotate(-3deg); }
+  }
 </style>
 </head>
 <body>
 
-<!-- Loading animatsiyasi -->
-<div id="loadingScreen" role="alert" aria-live="assertive" style="
-  position: fixed; top:0; left:0; width:100%; height:100%;
-  background: linear-gradient(-45deg, #667eea, #764ba2, #a678d1, #4c3a87);
-  background-size: 400% 400%;
-  animation: gradientBG 8s ease infinite;
-  color: white;
-  font-size: 2.5rem;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  z-index: 10000;
-  user-select: none;
-">
+<!-- Yuklanish ekran -->
+<div id="loadingScreen" role="alert" aria-live="assertive">
   <div id="loadingText" style="
     animation: shake 1s ease-in-out infinite;
     margin-bottom: 30px;
     font-weight: 700;
     text-shadow: 0 0 10px #d1c4e9;
   ">Yuklanmoqda...</div>
-  <div id="progressBarContainer" style="
-    width: 70%; height: 10px; background: rgba(255,255,255,0.3);
-    border-radius: 12px; overflow: hidden;
-  ">
-    <div id="progressBar" style="
-      height: 100%; width: 0%; background: #d1c4e9; border-radius: 12px;
-      transition: width 0.2s ease;
-    "></div>
+  <div id="progressBarContainer">
+    <div id="progressBar"></div>
   </div>
 </div>
 
-
-
-
+<!-- Asosiy kontent -->
 <div id="mainContent" role="main" aria-label="O'yinlar sahifasi">
   <div id="topBar">
     <input
@@ -236,45 +217,119 @@
   <div id="gameCards" aria-live="polite" aria-atomic="true"></div>
 </div>
 
-<div id="toast" role="alert" aria-live="assertive"></div>
+
+
+
 
 <script>
-  (function(){
+  (() => {
     const loadingScreen = document.getElementById('loadingScreen');
+    const progressBar = document.getElementById('progressBar');
     const mainContent = document.getElementById('mainContent');
     const gameCards = document.getElementById('gameCards');
     const searchInput = document.getElementById('searchInput');
-    const toast = document.getElementById('toast');
+
     const themeToggle = document.getElementById('themeToggle');
 
-    // Ovozlar
-    const qushSound = new Audio('https://actions.google.com/sounds/v1/animals/bird_chickadee.ogg');
-    const bronSound = new Audio('https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg');
-    const likeSound = new Audio('https://actions.google.com/sounds/v1/cartoon/pop.ogg');
-    const dislikeSound = new Audio('https://actions.google.com/sounds/v1/cartoon/boing.ogg');
+    // O'yinlar ro'yxati - har biriga o'ziga xos URL qo'yiladi
+    const games = [
+      {
+        name: "O'yin 1",
+        description: "Juda qiziqarli o'yin 1.",
+        img: "https://picsum.photos/seed/game1/400/160",
+        url: "game2.html"
+      },
 
-    // 30 ta o'yin ma'lumotlari (misol uchun)
-    const games = [];
-    for(let i=1; i<=30; i++){
-      games.push({
-        name: `O'yin #${i}`,
-        description: `Bu o'yin №${i} juda qiziqarli va foydali.`,
-        img: `https://picsum.photos/seed/game${i}/400/160`
-      });
+    {
+        name: "O'yin 2",
+        description: "Zamonaviy o'yin 2.",
+        img: "https://picsum.photos/seed/game2/400/160",
+        url: "games3.html"
+      },
+      {
+        name: "Ferkagame ",
+        description: "Zamonaviy o'yin 2.",
+        img: "https://picsum.photos/seed/game2/400/160",
+        url: "game4.html"
+      },
+      {
+        name: "O'yin 3",
+        description: "Foydali o'yin 3.",
+        img: "https://picsum.photos/seed/game3/400/160",
+        url: "https://wikipedia.org"
+      },
+      {
+        name: "O'yin 4",
+        description: "Qiziqarli o'yin 4.",
+        img: "https://picsum.photos/seed/game4/400/160",
+        url: "https://example.com"
+      },
+      {
+        name: "O'yin 4",
+        description: "Qiziqarli o'yin 4.",
+        img: "https://picsum.photos/seed/game4/400/160",
+        url: "https://example.com"
+      },
+      {
+        name: "O'yin 4",
+        description: "Qiziqarli o'yin 4.",
+        img: "https://picsum.photos/seed/game4/400/160",
+        url: "https://example.com"
+      },
+      {
+        name: "O'yin 4",
+        description: "Qiziqarli o'yin 4.",
+        img: "https://picsum.photos/seed/game4/400/160",
+        url: "https://example.com"
+      },
+      {
+        name: "O'yin 4",
+        description: "Qiziqarli o'yin 4.",
+        img: "https://picsum.photos/seed/game4/400/160",
+        url: "https://example.com"
+      },
+      {
+        name: "O'yin 4",
+        description: "Qiziqarli o'yin 4.",
+        img: "https://picsum.photos/seed/game4/400/160",
+        url: "https://example.com"
+      },
+      {
+        name: "O'yin 4",
+        description: "Qiziqarli o'yin 4.",
+        img: "https://picsum.photos/seed/game4/400/160",
+        url: "https://example.com"
+      },
+      {
+        name: "O'yin 4",
+        description: "Qiziqarli o'yin 4.",
+        img: "https://picsum.photos/seed/game4/400/160",
+        url: "https://example.com"
+      }
+      
+      // kerak bo'lsa qo'shimcha o'yinlar qo'shish mumkin
+    ];
+
+    // Yuklanish animatsiyasi progress barini 10 soniya davomida to'ldirish
+    function runLoading() {
+      let width = 0;
+      const interval = setInterval(() => {
+        width += 1; // har 100ms da 1% oshadi => 100*100ms = 10s
+        progressBar.style.width = width + '%';
+        if (width >= 100) {
+          clearInterval(interval);
+          loadingScreen.classList.add('hidden');
+          mainContent.style.display = 'block';
+          renderGames();
+        }
+      }, 100);
     }
 
-    function showToast(msg){
-      toast.textContent = msg;
-      toast.classList.add('show');
-      setTimeout(() => {
-        toast.classList.remove('show');
-      }, 2500);
-    }
-
-    function createCard(game){
+    // Kartani yaratish
+    function createCard(game) {
       const card = document.createElement('div');
       card.className = 'card';
-      card.setAttribute('tabindex', '0');
+
 
       const img = document.createElement('img');
       img.src = game.img;
@@ -289,64 +344,27 @@
       const p = document.createElement('p');
       p.textContent = game.description;
 
-      // Tugmalar guruhi
+
+
       const btnGroup = document.createElement('div');
       btnGroup.className = 'btnGroup';
 
-      const qushBtn = document.createElement('button');
-      qushBtn.textContent = 'Qush';
-      qushBtn.className = 'btn-qush';
-      qushBtn.addEventListener('click', e => {
+      const playBtn = document.createElement('button');
+      playBtn.className = 'btnPlay';
+      playBtn.textContent = 'Play ▶️';
+
+      playBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        qushSound.currentTime = 0;
-        qushSound.play();
-        showToast(`${game.name}: Qush tugmasi bosildi!`);
+        window.open(game.url, '_blank');
       });
 
-      const bronBtn = document.createElement('button');
-      bronBtn.textContent = 'Bron';
-      bronBtn.className = 'btn-bron';
-      bronBtn.addEventListener('click', e => {
-        e.stopPropagation();
-        bronSound.currentTime = 0;
-        bronSound.play();
-        showToast(`${game.name}: Bron tugmasi bosildi!`);
-      });
-
-      btnGroup.appendChild(qushBtn);
-      btnGroup.appendChild(bronBtn);
-
-      // Like/Dislike tugmalari
-      const likeGroup = document.createElement('div');
-      likeGroup.className = 'likeGroup';
-
-      const likeBtn = document.createElement('button');
-      likeBtn.textContent = '👍 Like';
-      likeBtn.className = 'btn-like';
-      likeBtn.addEventListener('click', e => {
-        e.stopPropagation();
-        likeSound.currentTime = 0;
-        likeSound.play();
-        showToast(`${game.name}: Like bosildi!`);
-      });
-
-      const dislikeBtn = document.createElement('button');
-      dislikeBtn.textContent = '👎 Dislike';
-      dislikeBtn.className = 'btn-dislike';
-      dislikeBtn.addEventListener('click', e => {
-        e.stopPropagation();
-        dislikeSound.currentTime = 0;
-        dislikeSound.play();
-        showToast(`${game.name}: Dislike bosildi!`);
-      });
-
-      likeGroup.appendChild(likeBtn);
-      likeGroup.appendChild(dislikeBtn);
+      btnGroup.appendChild(playBtn);
 
       content.appendChild(h3);
       content.appendChild(p);
       content.appendChild(btnGroup);
-      content.appendChild(likeGroup);
+
+
 
       card.appendChild(img);
       card.appendChild(content);
@@ -354,10 +372,11 @@
       return card;
     }
 
-    function renderGames(filter = ''){
+    // O'yinlarni qidiruvga qarab chizish
+    function renderGames(filter = '') {
       gameCards.innerHTML = '';
       const filtered = games.filter(g => g.name.toLowerCase().includes(filter.toLowerCase()));
-      if(filtered.length === 0){
+      if (filtered.length === 0) {
         gameCards.textContent = "Hech qanday o'yin topilmadi.";
         return;
       }
@@ -367,8 +386,8 @@
       });
     }
 
-    // Tema almashtirish
-    function toggleTheme(){
+    // Kun/Tun rejimini almashtirish
+    function toggleTheme() {
       const isDark = document.body.classList.toggle('dark');
       themeToggle.textContent = isDark ? "Kunga o‘tkazish" : "Tunga o‘tkazish";
       themeToggle.setAttribute('aria-pressed', isDark);
@@ -376,41 +395,16 @@
 
     themeToggle.addEventListener('click', toggleTheme);
 
-    window.addEventListener('load', () => {
-      setTimeout(() => {
-        loadingScreen.classList.add('hidden');
-        mainContent.style.display = 'block';
-        renderGames();
-      }, 2000);
-    });
-
+    // Qidiruv inputi eventi
     searchInput.addEventListener('input', e => {
       renderGames(e.target.value);
     });
-  })();
 
-
-
-    window.addEventListener('load', () => {
-    const loadingScreen = document.getElementById('loadingScreen');
-    const mainContent = document.getElementById('mainContent'); // Qolgan sayt qismi shu IDda bo‘lishi kerak
-
-    const progressBar = document.getElementById('progressBar');
-    let width = 0;
-
-    const interval = setInterval(() => {
-      if(width >= 100){
-        clearInterval(interval);
-        loadingScreen.style.display = 'none';
-        if(mainContent) mainContent.style.display = 'block';
-      } else {
-        width += 2; // 2% har 40ms => 2*50=100%
-        progressBar.style.width = width + '%';
-      }
-    }, 40);
-  });
-
-
+    // Yuklanishdan keyin asosiy kontentni ko‘rsatish
+    window.addEventListener('load', runLoading);
+  }
+  )
+  ();
 </script>
 
 </body>

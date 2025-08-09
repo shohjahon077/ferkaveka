@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Interaktiv Quiz</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    user-select: none;
+  }
+  #quizContainer {
+    background: rgba(0,0,0,0.4);
+    padding: 30px;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 0 20px #0f7ad4;
+  }
+  #question {
+    font-size: 22px;
+    margin-bottom: 20px;
+    font-weight: 700;
+  }
+  .answerBtn {
+    display: block;
+    width: 100%;
+    margin: 8px 0;
+    padding: 12px;
+    font-size: 18px;
+    background: #2193b0;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    color: white;
+    text-align: left;
+  }
+  .answerBtn:hover {
+    background: #0b578d;
+  }
+  #timer {
+    font-size: 20px;
+    margin-bottom: 15px;
+    font-weight: 600;
+    text-align: center;
+  }
+  #score {
+    font-size: 20px;
+    margin-top: 20px;
+    font-weight: 700;
+    text-align: center;
+  }
+  #restartBtn {
+    margin-top: 25px;
+    padding: 14px 45px;
+    font-size: 18px;
+    border: none;
+    border-radius: 30px;
+    background-color: #0b578d;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 0 15px #0b578d;
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<div id="quizContainer">
+  <div id="timer">Vaqt: <span id="timeLeft">15</span>s</div>
+  <div id="question">Savol yuklanmoqda...</div>
+  <div id="answers"></div>
+  <div id="score"></div>
+  <button id="restartBtn">Qayta boshlash</button>
+</div>
+
+<script>
+  const questions = [
+    {
+      question: "ferkaveka kim ?",
+      answers: ["bloger", "gemer", "chizuvchi", "olim"],
+      correct: 0
+    },
+    {
+      question: "ferkaveka qayerdan ?",
+      answers: ["buxoro", "samarqand", "andijom", "toshkent"],
+      correct: 0
+    },
+    {
+      question: "ferkavekani videolari qanday ?",
+      answers: ["prosta super", "yomon", "miyorida", "yaxshi"],
+      correct: 0
+    },
+    {
+      question: "Eng zo'r bloger kim ?",
+      answers: ["ferkaveka", "mr beat" ,"azajony","men"],
+      correct: 0
+    },
+    {
+      question: "siz ferkaveka obuna bulganmisiz ?",
+      answers: ["ha albatta", "hohlamayman", "bilmayman", "yuq"],
+      correct: 0
+    }
+  ];
+
+  let currentQuestionIndex = 0;
+  let score = 0;
+  let timerInterval;
+  let timeLeft = 15;
+
+  const questionEl = document.getElementById('question');
+  const answersEl = document.getElementById('answers');
+  const timeLeftEl = document.getElementById('timeLeft');
+  const scoreEl = document.getElementById('score');
+  const restartBtn = document.getElementById('restartBtn');
+
+  function startTimer() {
+    timeLeft = 15;
+    timeLeftEl.textContent = timeLeft;
+    timerInterval = setInterval(() => {
+      timeLeft--;
+      timeLeftEl.textContent = timeLeft;
+      if(timeLeft <= 0) {
+        clearInterval(timerInterval);
+        nextQuestion();
+      }
+    }, 1000);
+  }
+
+  function showQuestion() {
+    const q = questions[currentQuestionIndex];
+    questionEl.textContent = q.question;
+    answersEl.innerHTML = '';
+    q.answers.forEach((ans, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'answerBtn';
+      btn.textContent = ans;
+      btn.onclick = () => {
+        clearInterval(timerInterval);
+        if(i === q.correct) {
+          score++;
+          scoreEl.textContent = `Ball: ${score}`;
+        }
+        nextQuestion();
+      };
+      answersEl.appendChild(btn);
+    });
+    startTimer();
+  }
+
+  function nextQuestion() {
+    currentQuestionIndex++;
+    if(currentQuestionIndex < questions.length) {
+      showQuestion();
+    } else {
+      showResult();
+    }
+  }
+
+  function showResult() {
+    questionEl.textContent = "Test yakunlandi!";
+    answersEl.innerHTML = '';
+    scoreEl.textContent = `Umumiy ballingiz: ${score} / ${questions.length}`;
+    restartBtn.style.display = 'block';
+  }
+
+  restartBtn.onclick = () => {
+    currentQuestionIndex = 0;
+    score = 0;
+    scoreEl.textContent = '';
+    restartBtn.style.display = 'none';
+    showQuestion();
+  }
+
+  // O'yinni boshlash
+  showQuestion();
+
+</script>
+
+</body>
+</html>

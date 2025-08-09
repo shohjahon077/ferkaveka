@@ -1,211 +1,476 @@
 <!DOCTYPE html>
 <html lang="uz">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="stylesheet" href="style.css">
-<title>FERKAVEKA - Hamburger Menyu</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>FERKAVEKA — Bosh sahifa (mobil menyu tuzatildi)</title>
 <style>
- 
+:root{
+  --bg-day: linear-gradient(180deg,#071428 0%, #081726 100%);
+  --bg-night: linear-gradient(180deg,#02040a 0%, #081022 100%);
+  --card-bg: rgba(255,255,255,0.03);
+  --text: #e6eef8;
+  --muted: rgba(230,238,248,0.64);
+  --accent: #ff3d3d;
+  --glass: rgba(255,255,255,0.04);
+  --shadow: 0 12px 40px rgba(2,6,23,0.7);
+}
+html,body{
+  height:100%;margin:0;font-family:Inter,system-ui,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  background:var(--bg-day); color:var(--text);
+  touch-action: manipulation;
+}
+body.night{ background:var(--bg-night); --accent:#ff6b6b; --card-bg:rgba(255,255,255,0.02); }
+
+/* ---------- Header & nav (fixed top, high z-index) ---------- */
+.header {
+  position:fixed; inset:0 0 auto 0; height:64px; display:flex; align-items:center;
+  justify-content:space-between; gap:12px; padding:10px 16px;
+  z-index:9999; background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  backdrop-filter: blur(10px) saturate(120%);
+  border-bottom:1px solid rgba(255,255,255,0.03);
+}
+.brand{display:flex;align-items:center;gap:12px}
+.logo-mark{width:46px;height:46px;border-radius:10px;background:linear-gradient(135deg,#ff9b9b,#ff3d3d);display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff}
+.brand .titles{line-height:1}
+.brand .titles .main{font-weight:900}
+.brand .titles .sub{font-size:12px;color:var(--muted)}
+
+/* Desktop nav */
+.nav-desktop{display:flex;gap:12px;align-items:center}
+.nav-desktop a{color:var(--text);text-decoration:none;padding:8px 10px;border-radius:8px;font-weight:700}
+.nav-desktop a:active,.nav-desktop a:focus{outline:2px solid rgba(255,255,255,0.06);outline-offset:2px}
+
+/* Controls */
+.controls{display:flex;gap:10px;align-items:center}
+.search{padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:var(--text)}
+.btn{cursor:pointer;padding:8px 12px;border-radius:10px;border:0;background:rgba(255,255,255,0.03);color:var(--text);font-weight:700}
+
+/* ---------- Mobile nav (hamburger) ---------- */
+.hamburger{
+  display:none; width:44px;height:44px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);
+  align-items:center;justify-content:center;cursor:pointer;
+}
+.hamburger .lines{width:18px;height:2px;background:var(--text);box-shadow:0 6px 0 var(--text),0 -6px 0 var(--text);}
+
+/* Slide-down mobile menu overlay (covers top area, full-width) */
+.mobile-menu{
+  position:fixed; left:0; right:0; top:64px; height:0; overflow:hidden;
+  transition:height .36s cubic-bezier(.2,.9,.2,1),opacity .25s;
+  z-index:9998; background:linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.45));
+  backdrop-filter: blur(8px);
+}
+.mobile-menu.open{ height:220px; padding:18px 12px 20px 12px; }
+/* content inside mobile menu */
+.mobile-menu .links{display:flex;flex-direction:column;gap:10px;max-width:520px;margin:0 auto}
+.mobile-menu a{display:block;padding:12px;border-radius:10px;background:rgba(255,255,255,0.02);text-decoration:none;color:var(--text);font-weight:800}
+
+/* ---------- Main content (push down so header doesn't overlap) ---------- */
+main{
+  max-width:1200px;margin:0 auto;padding:86px 18px 24px; /* top padding = header height + small gap */
+}
+
+/* ---------- Grid & Cards ---------- */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+.card-wrap{perspective:1200px}
+.card{
+  position:relative;border-radius:12px;background:var(--card-bg);overflow:hidden;height:846px;
+  box-shadow:var(--shadow);transition:transform .45s cubic-bezier(.2,.9,.2,1),box-shadow .3s;
+  transform-style:preserve-3d;border:1px solid rgba(255,255,255,0.03);
+  -webkit-tap-highlight-color: transparent;
+}
+/* ensure card doesn't cover header when transformed */
+.card { will-change: transform; pointer-events:auto; }
+.card .video-wrap{height:700px;padding:12px}
+.card video{width:100%;height:100%;object-fit:cover;border-radius:8px;display:block;pointer-events:none}
+.card .info{padding:10px;display:flex;flex-direction:column;gap:8px}
+.title{font-weight:800}
+.meta{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:13px}
+.controls-row{display:flex;gap:8px;align-items:center}
+
+/* like badge and buttons */
+.like-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,0.02);font-weight:700;border:1px solid rgba(255,255,255,0.02)}
+.action-btn{padding:6px 8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);font-weight:700;color:var(--text)}
+
+/* ripple inside card */
+.card .ripple{position:absolute;border-radius:9999px;transform:translate(-50%,-50%);pointer-events:none;background:rgba(255,255,255,0.06);width:10px;height:10px;opacity:0;transition:width .6s,height .6s,opacity .6s}
+
+/* Modal */
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.85));z-index:10000;padding:20px}
+.modal.show{display:flex}
+.modal .box{width:100%;max-width:1000px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.08));border-radius:12px;overflow:hidden;box-shadow:0 30px 90px rgba(0,0,0,0.8)}
+.modal video{width:auto;height:700px;object-fit:cover;background:black}
+.modal .meta{padding:12px;display:flex;justify-content:space-between;align-items:center}
+
+/* small screens adjustments */
+@media (max-width:880px){
+  .nav-desktop{display:none}
+  .hamburger{display:flex}
+  .mobile-menu{top:64px}
+  main{padding-top:86px}
+}
+@media (max-width:520px){
+  .mobile-menu.open{height:260px}
+  main{padding-top:86px}
+  .card{height:846px}
+  .modal video{height:700px}
+  .search{display:none}
+}
 </style>
 </head>
 <body>
 
-<nav class="navbar">
-  <div class="logo">FERKAVEKA</div>
+<!-- Audio preload -->
+<audio id="audio-like" src="https://www.soundjay.com/buttons/sounds/button-16.mp3" preload="auto"></audio>
+<audio id="audio-open" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" preload="auto"></audio>
+<audio id="audio-intro" src="https://www.soundjay.com/buttons/sounds/button-09.mp3" preload="auto"></audio>
 
-  <ul class="nav-links" id="navLinks">
-    <li><a href="#">Bosh sahifa</a></li>
-    <li><a href="game1.html">Ferka game</a></li>
-    <li><a href="#">Aloqa</a></li>
-    <li><a href="#">Videolar</a></li>
-  </ul>
+<!-- INTRO -->
+<div id="intro" role="dialog" aria-modal="true" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;background:radial-gradient(circle at 30% 20%, rgba(255,61,61,0.12), transparent 8%);z-index:9997">
+  <div style="font-weight:900;font-size:clamp(36px,9vw,96px);color:var(--accent);letter-spacing:6px">FERKAVEKA</div>
+  <div style="margin-top:12px;color:var(--muted)">Yuklanmoqda — boshlash uchun bosing</div>
+  <button id="intro-btn" class="btn" style="margin-top:14px">Boshlash</button>
+</div>
 
-  <div class="hamburger" id="hamburger">
-    <div></div>
-    <div></div>
-    <div></div>
+<!-- HEADER (fixed) -->
+<header class="header" role="banner" aria-label="Asosiy menyu">
+  <div class="brand" style="align-items:center">
+    <div class="logo-mark">F</div>
+    <div class="titles">
+      <div class="main">FERKAVEKA</div>
+      <div class="sub">Game & Videos</div>
+    </div>
   </div>
-</nav>
+
+  <nav class="nav-desktop" role="navigation" aria-label="Bosh menyu">
+    <a href="">Aloqa</a>
+    <a href="game1.html">FerkaGame</a>
+    <a href="">Videolar</a>
+  </nav>
+
+  <div class="controls">
+    <input id="search" class="search" placeholder="Videolarni qidir..." aria-label="Qidiruv" />
+    <button id="toggle-theme" class="btn" aria-pressed="false">🌙 Tun</button>
+    <button id="hamburger" class="hamburger" aria-expanded="false" aria-controls="mobile-menu" aria-label="Menyu ochish">
+      <span class="lines" aria-hidden="true"></span>
+    </button>
+  </div>
+</header>
+
+<!-- Mobile slide-down menu -->
+<div id="mobile-menu" class="mobile-menu" role="region" aria-hidden="true">
+  <div class="links">
+    <a href="" class="mobile-link">Videolar</a>
+    <a href="game1.html" class="mobile-link">FerkaGame</a>
+    <a href="" class="mobile-link">Aloqa</a>
+  
+    <!-- extra quick actions -->
+    <a href="#contact" class="mobile-link">Bog'lanish (tez)</a>
+  </div>
+</div>
+
+<!-- Main content (pushed down so header doesn't block) -->
+<main>
+  <section id="videolar">
+    <h2 style="font-size:18px;margin:6px 0 12px">Tavsiya qilingan video reklamalar</h2>
+    <div class="grid" id="cards-grid"></div>
+  </section>
+
+  <section id="ferkagame" style="margin-top:34px">
+    <h2 style="font-size:18px;margin:6px 0 12px">FerkaGame — Tez orada</h2>
+    <p style="color:var(--muted)">Demo versiya — o‘yinga alohida sahifa qo‘shiladi.</p>
+  </section>
+
+  <section id="aloqa" style="margin-top:34px">
+    <h2 style="font-size:18px;margin:6px 0 12px">Aloqa</h2>
+    <p style="color:var(--muted)">Telefon: +998 90 123 45 67 &nbsp;|&nbsp; Telegram: <a href="https://t.me/ferkaveka" target="_blank" style="color:var(--accent)">@ferkaveka</a></p>
+  </section>
+</main>
+
+<!-- Footer -->
+<footer style="padding:24px;text-align:center;color:var(--muted);border-top:1px solid rgba(255,255,255,0.02)">
+  Shohjahon Mahkamov tomonidan yaratilgan • © <span id="year"></span>
+</footer>
+
+<!-- Modal -->
+<div id="modal" class="modal" aria-hidden="true" role="dialog">
+  <div class="box" role="document">
+    <video id="modal-video" controls></video>
+    <div class="meta">
+      <div id="modal-title" style="font-weight:800"></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div id="modal-views" style="color:var(--muted)"></div>
+        <button class="action-btn" id="modal-mute">Mute</button>
+        <button class="action-btn" id="modal-close">Chiqish</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
-  const hamburger = document.getElementById('hamburger');
-  const navLinks = document.getElementById('navLinks');
+/* ---------------- Basic state & sample videos ---------------- */
+const VIDEOS = [
+  {id:1,title:"ChatGPT vs GOOGLE",src:"IMG_8857.MOV",dur:"0:23"},
+  {id:2,title:"SHKAFDAGI MAXLUQ",src:"IMG_6735.MOV",dur:"0:12"},
+  {id:3,title:"TEZ UXLANG BO’LAMASA OYIM SIZNI HAM TOPADI",src:"IMG_6616.MOV",dur:"0:18"},
+  {id:4,title:"XIYONAT YOKI O’N5TAKAM3",src:"IMG_5825.MOV",dur:"0:10"},
+  {id:5,title:"UYGA O’G’RI KIRSA",src:"IMG_5447.MOV",dur:"0:30"},
+  {id:6,title:"GERMANIYALIK RASSOM QALEY O’XSHIYAMANMI?😂",src:"IMG_5242.MOV",dur:"0:15"},
+  {id:7,title:"TIRNOQ CHAYNASH QANDAY YOMON",src:"IMG_5039.MOV",dur:"0:21"},
+  {id:8,title:"AGARDA SIZGA SHUNDAY TAKLIF KELGANDA NIMA QILARDIZ?",src:"IMG_4854.MOV",dur:"0:14"},
+  {id:9,title:"RETRO TRAILER",src:"IMG_4854(1).MOV",dur:"0:27"},
+  {id:10,title:"LAUNCH TEASER",src :"",dur:"0:11"},
+  {id:11,title:"WEEKEND EVENT",src:"https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",dur:"0:32"},
+  {id:12,title:"SPOTLIGHT",src:"",dur:"0:17"}
+];
 
-  hamburger.addEventListener('click', () => {
-    navLinks.classList.toggle('active');
+const audioLike = document.getElementById('audio-like');
+const audioOpen = document.getElementById('audio-open');
+const audioIntro = document.getElementById('audio-intro');
+
+document.getElementById('year').textContent = new Date().getFullYear();
+
+/* ---------- LocalStorage helpers ---------- */
+function getLS(k,d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } }
+function setLS(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+
+let likes = getLS('ferkaveka_likes', {});
+let views = getLS('ferkaveka_views', {});
+let viewedThisSession = {};
+
+/* init counts */
+for(const v of VIDEOS){ if(likes[v.id]==null) likes[v.id]=0; if(views[v.id]==null) views[v.id]=0; }
+setLS('ferkaveka_likes', likes);
+setLS('ferkaveka_views', views);
+
+/* ---------- Render grid (cards) ---------- */
+const grid = document.getElementById('cards-grid');
+
+function createCard(v){
+  const wrap = document.createElement('div'); wrap.className='card-wrap';
+  const card = document.createElement('div'); card.className='card'; card.tabIndex=0; card.dataset.id=v.id;
+
+  // video area
+  const videoWrap = document.createElement('div'); videoWrap.className='video-wrap';
+  const vid = document.createElement('video'); vid.src=v.src; vid.muted=true; vid.loop=true; vid.playsInline=true;
+  vid.setAttribute('playsinline','');
+  vid.style.height='100%';
+  vid.play().catch(()=>{});
+  videoWrap.appendChild(vid);
+
+  // info
+  const info = document.createElement('div'); info.className='info';
+  const title = document.createElement('div'); title.className='title'; title.textContent=v.title;
+  const meta = document.createElement('div'); meta.className='meta';
+  const left = document.createElement('div'); left.style.display='flex'; left.style.gap='8px'; left.style.alignItems='center';
+  const likeBadge = document.createElement('div'); likeBadge.className='like-badge'; likeBadge.innerHTML = `<span class="heart">${likes[v.id]>0?'❤':'♡'}</span><span class="count">${likes[v.id]}</span>`;
+  const viewsEl = document.createElement('div'); viewsEl.style.color='var(--muted)'; viewsEl.textContent = `${views[v.id]} ko‘rish`;
+  left.appendChild(likeBadge);
+  meta.appendChild(left);
+  meta.appendChild(viewsEl);
+
+  const actions = document.createElement('div'); actions.className='controls-row';
+  const btnOpen = document.createElement('button'); btnOpen.className='action-btn'; btnOpen.textContent='Play';
+  const btnLike = document.createElement('button'); btnLike.className='action-btn'; btnLike.textContent='Like';
+  const btnShare = document.createElement('button'); btnShare.className='action-btn'; btnShare.textContent='Share';
+  actions.appendChild(btnOpen); actions.appendChild(btnLike); actions.appendChild(btnShare);
+
+  info.appendChild(title); info.appendChild(meta); info.appendChild(actions);
+
+  const ripple = document.createElement('div'); ripple.className='ripple';
+  card.appendChild(videoWrap); card.appendChild(info); card.appendChild(ripple); wrap.appendChild(card);
+
+  /* ---- tilt effect (only for pointer devices) ---- */
+  card.addEventListener('pointermove', (e)=>{
+    if(window.matchMedia('(hover: none)').matches) return; // skip on touch-only devices
+    const rect = card.getBoundingClientRect();
+    const cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
+    const dx = e.clientX - cx, dy = e.clientY - cy;
+    const rx = (-dy/(rect.height/2))*6, ry=(dx/(rect.width/2))*8;
+    card.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`;
   });
+  card.addEventListener('pointerleave', ()=>{ card.style.transform=''; card.style.boxShadow='var(--shadow)'; });
+
+  /* ---- Open modal (play full video) ---- */
+  btnOpen.addEventListener('click', (ev)=>{ ev.stopPropagation(); openModal(v); });
+  card.addEventListener('click', (ev)=>{ if(ev.target.closest('.action-btn')) return; openModal(v); });
+
+  /* ---- Like behavior ---- */
+  function doLike(){
+    likes[v.id] = (likes[v.id] || 0) + 1;
+    setLS('ferkaveka_likes', likes);
+    likeBadge.querySelector('.heart').textContent = '❤';
+    likeBadge.querySelector('.count').textContent = likes[v.id];
+    audioLike.currentTime = 0; audioLike.play().catch(()=>{});
+    likeBadge.animate([{transform:'scale(1)'},{transform:'scale(1.12)'},{transform:'scale(1)'}],{duration:320, easing:'ease-out'});
+  }
+  btnLike.addEventListener('click', (ev)=>{ ev.stopPropagation(); doLike(); });
+  likeBadge.addEventListener('click', (ev)=>{ ev.stopPropagation(); doLike(); });
+
+  /* ---- Share ---- */
+  btnShare.addEventListener('click', (ev)=>{
+    ev.stopPropagation();
+    const url = `${location.href.split('#')[0]}#video-${v.id}`;
+    navigator.clipboard?.writeText(url).then(()=> {
+      btnShare.textContent='Nusxalandi';
+      setTimeout(()=> btnShare.textContent='Share',1200);
+    }).catch(()=>{ btnShare.textContent='Link tayyor'; setTimeout(()=> btnShare.textContent='Share',1200); });
+  });
+
+  /* ---- small ripple on click ---- */
+  card.addEventListener('click', (e)=>{
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left, y = e.clientY - rect.top;
+    ripple.style.left = x+'px'; ripple.style.top = y+'px'; ripple.style.width='10px'; ripple.style.height='10px'; ripple.style.opacity='0.9';
+    setTimeout(()=>{ ripple.style.width='600px'; ripple.style.height='600px'; ripple.style.opacity='0'; ripple.style.transition='width .8s ease,height .8s ease,opacity .8s ease'; },10);
+    setTimeout(()=>{ ripple.style.transition=''; ripple.style.width='10px'; ripple.style.height='10px'; },900);
+  });
+
+  return wrap;
+}
+
+function renderGrid(filter=''){
+  grid.innerHTML='';
+  const q = filter.trim().toLowerCase();
+  for(const v of VIDEOS){
+    if(q && !v.title.toLowerCase().includes(q)) continue;
+    grid.appendChild(createCard(v));
+  }
+}
+renderGrid();
+
+/* ---------- Search ---------- */
+document.getElementById('search').addEventListener('input', (e)=> renderGrid(e.target.value));
+
+/* ---------- Modal (play & view count) ---------- */
+const modal = document.getElementById('modal');
+const modalVideo = document.getElementById('modal-video');
+const modalTitle = document.getElementById('modal-title');
+const modalViews = document.getElementById('modal-views');
+const modalClose = document.getElementById('modal-close');
+const modalMute = document.getElementById('modal-mute');
+
+function openModal(v){
+  modalVideo.src = v.src;
+  modalTitle.textContent = v.title;
+  modalViews.textContent = `${views[v.id] || 0} ko‘rish`;
+  modal.classList.add('show'); modal.setAttribute('aria-hidden','false');
+  modalVideo.currentTime = 0; modalVideo.muted = false;
+  modalVideo.play().catch(()=>{});
+  audioOpen.currentTime = 0; audioOpen.play().catch(()=>{});
+  if(!viewedThisSession[v.id]){
+    views[v.id] = (views[v.id] || 0) + 1;
+    viewedThisSession[v.id] = true;
+    setLS('ferkaveka_views', views);
+    updateCardsViews();
+    modalViews.textContent = `${views[v.id]} ko‘rish`;
+  }
+}
+function closeModal(){ modal.classList.remove('show'); modal.setAttribute('aria-hidden','true'); modalVideo.pause(); modalVideo.src=''; }
+modal.addEventListener('click',(e)=>{ if(e.target===modal) closeModal(); });
+
+/* modal controls (create small buttons dynamically to avoid clutter) */
+(function createModalControls(){
+  const meta = document.querySelector('.modal .meta');
+  if(meta){
+    const muteBtn = document.getElementById('modal-mute');
+    const closeBtn = document.getElementById('modal-close');
+    if(!muteBtn){
+      const m = document.createElement('button'); m.className='action-btn'; m.id='modal-mute'; m.textContent='Mute';
+      m.addEventListener('click', ()=>{ modalVideo.muted = !modalVideo.muted; m.textContent = modalVideo.muted ? 'Unmute' : 'Mute'; });
+      meta.appendChild(m);
+    }
+    if(!closeBtn){
+      const c = document.createElement('button'); c.className='action-btn'; c.id='modal-close'; c.textContent='Chiqish';
+      c.addEventListener('click', closeModal);
+      meta.appendChild(c);
+    }
+  }
+})();
+
+/* update views inside cards after increment */
+function updateCardsViews(){
+  document.querySelectorAll('.card').forEach(card=>{
+    const id = Number(card.dataset.id || card.closest('.card')?.dataset?.id);
+    if(!id) return;
+    const metaRight = card.querySelector('.meta > div:last-child');
+    if(metaRight) metaRight.textContent = `${views[id] || 0} ko‘rish`;
+  });
+}
+
+/* ---------- Theme toggle ---------- */
+const themeBtn = document.getElementById('toggle-theme');
+let isNight = false;
+themeBtn.addEventListener('click', ()=>{
+  isNight = !isNight;
+  if(isNight){ document.body.classList.add('night'); themeBtn.textContent='☀️ Kun'; themeBtn.setAttribute('aria-pressed','true'); }
+  else { document.body.classList.remove('night'); themeBtn.textContent='🌙 Tun'; themeBtn.setAttribute('aria-pressed','false'); }
+  audioOpen.currentTime = 0; audioOpen.play().catch(()=>{});
+});
+
+/* ---------- Mobile hamburger menu handling (fixes overlay problems) ---------- */
+const hamburger = document.getElementById('hamburger');
+const mobileMenu = document.getElementById('mobile-menu');
+hamburger.addEventListener('click', ()=>{
+  const open = mobileMenu.classList.toggle('open');
+  mobileMenu.setAttribute('aria-hidden', String(!open));
+  hamburger.setAttribute('aria-expanded', String(open));
+  // when mobile menu open, ensure it is above cards but below header (header z-index is higher)
+  if(open){
+    // lock body scroll lightly on small devices
+    document.body.style.overflow = 'hidden';
+  } else {
+    document.body.style.overflow = '';
+  }
+});
+/* close mobile menu when a link clicked */
+document.querySelectorAll('.mobile-link').forEach(a=>{
+  a.addEventListener('click', ()=> {
+    mobileMenu.classList.remove('open'); mobileMenu.setAttribute('aria-hidden','true'); hamburger.setAttribute('aria-expanded','false');
+    document.body.style.overflow = '';
+  });
+});
+
+/* ---------- Intro handling ---------- */
+const intro = document.getElementById('intro');
+const introBtn = document.getElementById('intro-btn');
+function startExperience(){
+  audioIntro.currentTime = 0; audioIntro.play().catch(()=>{});
+  intro.style.transition = 'opacity .5s ease, transform .5s ease';
+  intro.style.opacity = '0'; intro.style.transform = 'translateY(-10px)';
+  setTimeout(()=> intro.remove(), 550);
+}
+introBtn.addEventListener('click', startExperience);
+intro.addEventListener('click', (e)=> { if(e.target === intro) startExperience(); });
+
+/* ---------- Accessibility ---------- */
+document.addEventListener('keydown', (e)=> {
+  if(e.key === 'Escape'){ if(modal.classList.contains('show')) closeModal(); if(mobileMenu.classList.contains('open')) { mobileMenu.classList.remove('open'); hamburger.setAttribute('aria-expanded','false'); document.body.style.overflow=''; } }
+});
+
+/* ---------- small helper to ensure card views are current on initial load ---------- */
+function syncCards(){
+  document.querySelectorAll('.card').forEach(card=>{
+    const id = Number(card.dataset.id);
+    if(!id) return;
+    const count = likes[id] || 0;
+    const heart = card.querySelector('.heart');
+    const cnt = card.querySelector('.count');
+    if(heart) heart.textContent = count>0 ? '❤' : '♡';
+    if(cnt) cnt.textContent = count;
+    const elViews = card.querySelector('.meta > div:last-child');
+    if(elViews) elViews.textContent = `${views[id] || 0} ko‘rish`;
+  });
+}
+setTimeout(syncCards, 300);
+
+/* Prevent cards overlaying header on iOS when transformed:
+   header is fixed with high z-index; cards may transform visually but pointer events for header remain on top.
+   We already set header z-index:9999 and mobile menu z-index:9998; that ensures menu buttons always clickable.
+*/
+
+/* End */
 </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  <!-- Intro animatsiya -->
-  <div id="intro" class="intro">
-    <h1 class="ferkaveka">FERKAVEKA</h1>
-  </div>
-
-  <!-- Kartalar konteyneri (dastlab yashirin) -->
-  <div id="cards-container" class="cards-container hidden">
-    <a href="indexboshm2.html">
-        
-        <div class="ad-card">
-
-      <video autoplay muted loop playsinline>
-
-        <source src="IMG_8857.MOV" type="video/mp4" />
-
-        Brauzeringiz video qo‘llab-quvvatlamaydi.
-
-      </video>
-
-      <div class="text-overlay">
-
-        <h2>🔥 Reklama 1</h2>
-
-        <p>Ko‘rib qoling!</p>
-
-      </div>
-
-      <div class="bottom-line"></div>
-
-    </div>
-
-</a>
-
-
-
-
-
-
-    <a href="indexboshm3.html">
-
-        <div class="ad-card">
-      <video autoplay muted loop playsinline>
-        <source src="video5208667969852315182.mp4" type="video/mp4" />
-      </video>
-      <div class="text-overlay">
-        <h2>🔥 Reklama 2</h2>
-        <p>Tomosha qiling!</p>
-      </div>
-      <div class="bottom-line"></div>
-    </div>
-
-    </a>
-
-
-
-    <a href="indexboshm4.html">
-        <div class="ad-card">
-      <video autoplay muted loop playsinline>
-        <source src="IMG_6735.MOV" type="video/mp4" />
-      </video>
-      <div class="text-overlay">
-        <h2>🔥 Reklama 3</h2>
-        <p>Yoqtiring!</p>
-      </div>
-      <div class="bottom-line"></div>
-    </div>
-    </a>
-    
-
-
-
-    <a href="indexboshm5.html">
-         <div class="ad-card">
-      <video autoplay muted loop playsinline>
-        <source src="IMG_6616.MOV" type="video/mp4" />
-      </video>
-      <div class="text-overlay">
-        <h2>🔥 Reklama 4</h2>
-        <p>Eng zo‘r!</p>
-      </div>
-      <div class="bottom-line"></div>
-    </div>
-    </a>
-
-   
-    <a href="indexboshm6.html">
-        <div class="ad-card">
-      <video autoplay muted loop playsinline>
-        <source src="IMG_5825.MOV" type="video/mp4" />
-      </video>
-      <div class="text-overlay">
-        <h2>🔥 Reklama 5</h2>
-        <p>Tezroq ko‘ring!</p>
-      </div>
-      <div class="bottom-line"></div>
-    </div>
-  </div>
-    </a>
-    
-
-
-    <a href="indexboshm7.html">
-        <div id="cards-container" class="cards-container hidden">
-  <div class="ad-card">
-    <video autoplay muted loop playsinline>
-      <source src="IMG_5447.MOV" type="video/mp4" />
-      Brauzeringiz video qo‘llab-quvvatlamaydi.
-     </video>
-        <div class="text-overlay">
-            <h2>🔥 Reklama 6</h2>
-            <p>Ko‘rib qoling!</p>
-        </div>
-        <div class="bottom-line"></div>
-        </div>
-    </a>
-
-
-
-
-
-
-    <a href="indexboshm8.html">
-          <div class="ad-card">
-    <video autoplay muted loop playsinline>
-      <source src="IMG_5242.MOV" type="video/mp4" />
-    </video>
-    <div class="text-overlay">
-      <h2>🔥 Reklama 7</h2>
-      <p>Tomosha qiling!</p>
-    </div>
-    <div class="bottom-line"></div>
-  </div>
-    </a>
-
-
-
-
-
-  
-
-
-    <a href="indexboshm1.html">
-        <div class="ad-card">
-    <video autoplay muted loop playsinline>
-      <source src="IMG_5039.MOV" type="video/mp4" />
-    </video>
-        <div class="text-overlay">
-        <h2>🔥 Reklama 8</h2>
-        <p>Yoqtiring!</p>
-        </div>
-        <div class="bottom-line"></div>
-        </div>
-    </a>
-
-
-  <script src="script.js"></script>
 </body>
 </html>
