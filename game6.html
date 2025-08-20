@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Tosh-Qaychi-Qog'oz — FERKAVEKA</title>
+<style>
+  :root{
+    --bg:#071228; --card:#0b2436; --accent:#39a9db; --accent2:#ff6b6b;
+    --glass: rgba(255,255,255,0.04);
+    --win:#7bf7a4; --lose:#ff9aa2; --tie:#ffd86b;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,Roboto,Arial;background:linear-gradient(180deg,var(--bg),#021023);color:#eaf7ff;display:flex;align-items:center;justify-content:center}
+  
+  /* Loader overlay */
+  #loader {
+    position:fixed; top:0; left:0; width:100%; height:100%;
+    background:var(--bg); display:flex; flex-direction:column;
+    justify-content:center; align-items:center; z-index:9999;
+  }
+  .spinner {
+    width:60px; height:60px; border:6px solid rgba(255,255,255,0.15);
+    border-top:6px solid var(--accent); border-radius:50%;
+    animation:spin 1s linear infinite; margin-bottom:15px;
+  }
+  @keyframes spin { 0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);} }
+  #loader p { font-weight:700; letter-spacing:1px; color:var(--accent); font-size:18px; }
+
+  .app{width:100%;max-width:960px;padding:22px; display:none;} /* hide until loaded */
+  .card{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border-radius:14px;padding:18px;border:1px solid rgba(255,255,255,0.04);box-shadow:0 8px 30px rgba(2,6,12,0.6)}
+  h1{margin:0 0 8px 0;font-size:22px;color:var(--accent);letter-spacing:1px}
+  p.sub{margin:0 0 18px 0;color:rgba(255,255,255,0.7);font-size:13px}
+
+  .top-row{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:12px; flex-wrap:wrap}
+  .score{display:flex;gap:12px;align-items:center; flex-wrap:wrap}
+  .score .block{background:var(--glass);padding:8px 12px;border-radius:10px;font-weight:700}
+  .controls{display:flex;gap:10px;align-items:center}
+
+  /* choices */
+  .arena{display:flex;gap:18px;align-items:center;justify-content:center;padding:22px 8px; flex-wrap:wrap}
+  .choice{
+    width:120px;height:120px;border-radius:14px;background:linear-gradient(180deg,#0f2a3a,#07202e);
+    display:flex;align-items:center;justify-content:center;flex-direction:column;cursor:pointer;border:2px solid rgba(255,255,255,0.02);
+    transition:transform .14s ease, box-shadow .14s ease, border-color .14s;
+    user-select:none;
+  }
+  .choice:hover{transform:translateY(-6px);box-shadow:0 10px 30px rgba(0,0,0,0.45);border-color:rgba(255,255,255,0.06)}
+  .choice .icon{font-size:40px;margin-bottom:6px}
+  .choice .label{font-weight:800;font-size:13px;color:rgba(255,255,255,0.95)}
+
+  .vs{font-weight:900;color:rgba(255,255,255,0.8);margin:0 8px}
+
+  .result-box{margin-top:8px;padding:12px;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,0.01),transparent);display:flex;align-items:center;justify-content:space-between; flex-wrap:wrap}
+  .result-text{font-size:16px;font-weight:900}
+  .subresult{color:rgba(255,255,255,0.7);font-size:13px}
+
+  .small{font-size:12px;color:rgba(255,255,255,0.65)}
+
+  /* highlight states */
+  .win{box-shadow:0 8px 30px rgba(20,220,120,0.12);border-color:rgba(123,247,164,0.18)}
+  .lose{box-shadow:0 8px 30px rgba(255,80,110,0.12);border-color:rgba(255,154,162,0.16)}
+  .tie{box-shadow:0 8px 30px rgba(255,215,107,0.08);border-color:rgba(255,215,107,0.12)}
+
+  /* footer buttons */
+  .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:12px; flex-wrap:wrap}
+  button.btn{background:var(--accent);border:none;padding:10px 14px;border-radius:10px;color:#04212c;font-weight:800;cursor:pointer}
+  button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:rgba(255,255,255,0.9)}
+
+  /* responsive */
+  @media (max-width:700px){
+    .arena{flex-direction:column}
+    .choice{width:120px;height:96px}
+  }
+
+  /* little animation for cpu */
+  .cpu-anim{opacity:0.18;transform:scale(0.96);transition:opacity .14s, transform .14s}
+  .cpu-anim.show{opacity:1;transform:scale(1.02)}
+</style>
+</head>
+<body>
+  <!-- Loader -->
+  <div id="loader">
+    <div class="spinner"></div>
+    <p>Yuklanmoqda...</p>
+  </div>
+
+  <div class="app">
+    <div class="card">
+      <div class="top-row">
+        <div>
+          <h1>Tosh • Qaychi • Qog'oz</h1>
+          <p class="sub">Ferkaveka qarshi — birinchi 3 gacha yutgan g‘olib bo‘ladi. Klaviatura: 1 = Tosh, 2 = Qaychi, 3 = Qog'oz.</p>
+        </div>
+        <div class="score">
+          <div class="block">Siz: <span id="playerScore">0</span></div>
+          <div class="block">Ferkaveka: <span id="cpuScore">0</span></div>
+          <div class="block small">Raund: <span id="round">0</span></div>
+        </div>
+      </div>
+
+      <div class="arena" aria-live="polite">
+        <div id="playerChoice" class="choice" aria-label="Sizning tanlovingiz">
+          <div class="icon" id="playerIcon">✊</div>
+          <div class="label" id="playerLabel">Siz</div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+          <div class="vs">VS</div>
+          <div class="subresult" id="roundResult">Boshlash uchun tanlov qiling</div>
+          <div style="height:10px"></div>
+          <div id="cpuChoice" class="choice cpu-anim" aria-label="Kompyuter tanlovi">
+            <div class="icon" id="cpuIcon">❓</div>
+            <div class="label" id="cpuLabel">Ferkaveka</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div style="display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap">
+        <div class="choice" role="button" tabindex="0" data-move="rock" id="btnRock"><div class="icon">✊</div><div class="label">Tosh</div></div>
+        <div class="choice" role="button" tabindex="0" data-move="scissors" id="btnScissors"><div class="icon">✌️</div><div class="label">Qaychi</div></div>
+        <div class="choice" role="button" tabindex="0" data-move="paper" id="btnPaper"><div class="icon">🖐️</div><div class="label">Qog'oz</div></div>
+      </div>
+
+      <div class="result-box" id="resultBox" style="margin-top:18px">
+        <div>
+          <div class="result-text" id="resultText">—</div>
+          <div class="subresult" id="resultDetail">O‘yin kutmoqda</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+          <div class="small">Best of 3</div>
+          <div style="height:6px"></div>
+          <div id="finalMsg" style="font-weight:900"></div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="ghost" id="resetBtn">Qayta boshlash</button>
+        <button class="btn" id="autoPlayBtn">Tez o'ynash (Auto)</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  // Loader
+  window.addEventListener("load", ()=>{
+    setTimeout(()=>{
+      document.getElementById("loader").style.display="none";
+      document.querySelector(".app").style.display="block";
+    },1000);
+  });
+
+  // --- Existing game logic ---
+  const moves = ['rock','scissors','paper'];
+  const emoji = {rock:'✊', scissors:'✌️', paper:'🖐️'};
+  let playerScore = 0, cpuScore = 0, round = 0, locked = false, autoplay = false, autoplayTimer = null;
+  const playerScoreEl = document.getElementById('playerScore');
+  const cpuScoreEl = document.getElementById('cpuScore');
+  const roundEl = document.getElementById('round');
+  const playerIcon = document.getElementById('playerIcon');
+  const cpuIcon = document.getElementById('cpuIcon');
+  const playerLabel = document.getElementById('playerLabel');
+  const cpuLabel = document.getElementById('cpuLabel');
+  const roundResult = document.getElementById('roundResult');
+  const resultText = document.getElementById('resultText');
+  const resultDetail = document.getElementById('resultDetail');
+  const finalMsg = document.getElementById('finalMsg');
+  const cpuChoiceBox = document.getElementById('cpuChoice');
+
+  function cpuPick(){ return moves[Math.floor(Math.random()*moves.length)]; }
+  function whoWins(p,c){ if(p===c) return 'tie'; if((p==='rock' && c==='scissors')||(p==='scissors'&&c==='paper')||(p==='paper'&&c==='rock')) return 'player'; return 'cpu'; }
+  function setScores(){ playerScoreEl.textContent=playerScore; cpuScoreEl.textContent=cpuScore; roundEl.textContent=round; }
+  function highlight(choiceEl,outcome){ choiceEl.classList.remove('win','lose','tie'); void choiceEl.offsetWidth; choiceEl.classList.add(outcome); setTimeout(()=> choiceEl.classList.remove(outcome),900); }
+
+  function moveLabel(m){ if(m==='rock') return 'Tosh'; if(m==='scissors') return 'Qaychi'; return "Qog'oz"; }
+
+  function playRound(playerMove){
+    if(locked) return; locked=true; finalMsg.textContent=''; round++; setScores();
+    playerIcon.textContent=emoji[playerMove]; playerLabel.textContent=moveLabel(playerMove);
+    cpuIcon.textContent='...'; cpuLabel.textContent='Tanlov...'; cpuChoiceBox.classList.add('show');
+    const cycle=['✊','✌️','🖐️']; let ci=0; const cycInt=setInterval(()=>{ cpuIcon.textContent=cycle[ci%3]; ci++; },80);
+    setTimeout(()=>{
+      clearInterval(cycInt);
+      const cMove=cpuPick();
+      cpuIcon.textContent=emoji[cMove]; cpuLabel.textContent=moveLabel(cMove);
+      const winner=whoWins(playerMove,cMove);
+      if(winner==='tie'){ resultText.textContent='Durang'; resultDetail.textContent="Hech kim yutmadi — qayta urinib ko'ring."; highlight(document.querySelector(`[data-move="${playerMove}"]`),'tie'); highlight(cpuChoiceBox,'tie'); }
+      else if(winner==='player'){ playerScore++; resultText.textContent="Siz yutdingiz!"; resultDetail.textContent=`${moveLabel(playerMove)} > ${moveLabel(cMove)}`; highlight(document.querySelector(`[data-move="${playerMove}"]`),'win'); highlight(cpuChoiceBox,'lose'); }
+      else{ cpuScore++; resultText.textContent="Kompyuter yutdi"; resultDetail.textContent=`${moveLabel(cMove)} > ${moveLabel(playerMove)}`; highlight(document.querySelector(`[data-move="${playerMove}"]`),'lose'); highlight(cpuChoiceBox,'win'); }
+      setScores();
+      if(playerScore>=3||cpuScore>=3){ finalMsg.textContent=playerScore>=3?'Siz g‘olib bo‘ldingiz! 🎉':'Kompyuter g‘olib bo‘ldi. 😢'; resultDetail.textContent='Raund tugadi. "Qayta boshlash" bosib boshidan o‘ynang.'; locked=true; stopAutoplay(); }
+      else setTimeout(()=>{ locked=false; },520);
+    },700);
+  }
+
+  document.querySelectorAll('.choice[data-move]').forEach(btn=>{ btn.addEventListener('click',()=>playRound(btn.dataset.move)); btn.addEventListener('keydown',(e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); playRound(btn.dataset.move); }}); });
+  document.getElementById('resetBtn').addEventListener('click',()=>{ playerScore=0; cpuScore=0; round=0; locked=false; finalMsg.textContent=''; setScores(); playerIcon.textContent='✊'; playerLabel.textContent='Siz'; cpuIcon.textContent='❓'; cpuLabel.textContent='Kompyuter'; resultText.textContent='—'; resultDetail.textContent='O‘yin qayta boshladi'; });
+
+  const autoBtn=document.getElementById('autoPlayBtn');
+  autoBtn.addEventListener('click',()=>{ autoplay=!autoplay; if(autoplay){ autoBtn.textContent='Auto: To‘xtatish'; startAutoplay(); } else { autoBtn.textContent="Tez o'ynash (Auto)"; stopAutoplay(); } });
+  function startAutoplay(){ if(autoplayTimer) clearInterval(autoplayTimer); autoplayTimer=setInterval(()=>{ if(playerScore>=3||cpuScore>=3){ stopAutoplay(); return; } const pick=moves[Math.floor(Math.random()*moves.length)]; playRound(pick); },1100);}
+  function stopAutoplay(){ autoplay=false; if(autoplayTimer) clearInterval(autoplayTimer); autoplayTimer=null; autoBtn.textContent="Tez o'ynash (Auto)"; }
+
+  window.addEventListener('keydown',(e)=>{ if(e.key==='1') playRound('rock'); if(e.key==='2') playRound('scissors'); if(e.key==='3') playRound('paper'); if(e.key==='r'||e.key==='R') document.getElementById('resetBtn').click(); if(e.key==='a'||e.key==='A') autoBtn.click(); });
+
+  setScores();
+
+})();
+</script>
+</body>
+</html>
