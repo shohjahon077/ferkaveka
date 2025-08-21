@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>Ferkaveka 3D — (X/0) Tic‑Tac‑Toe</title>
+  <style>
+    :root{
+      --bg: #0b0f19;
+      --card: rgba(255,255,255,0.06);
+      --edge: rgba(255,255,255,0.12);
+      --accent: #8af;
+      --accent2: #7df7c5;
+      --x: #76a7ff;
+      --o: #7df7c5;
+      --text: #e8ecf3;
+      --muted: #9fb3c8;
+      --win: #ffe08a;
+      --shadow: 0 10px 26px rgba(0,0,0,.33), inset 0 0 0 1px var(--edge);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+      color:var(--text); background: radial-gradient(1200px 800px at 10% 10%, #12192f 0%, #0b0f19 45%, #070a12 100%);
+      overflow:hidden;
+    }
+
+    /* Light orbs (no heavy blur for speed) */
+    .orb{position:fixed; inset:auto; width:30vmin; height:30vmin; border-radius:50%; opacity:.12; pointer-events:none; will-change: transform, opacity}
+    .orb.one{right:-8vmin; top:-8vmin; background: radial-gradient(circle at 30% 30%, #6fd6ff, transparent 60%)}
+    .orb.two{left:-10vmin; bottom:-10vmin; background: radial-gradient(circle at 60% 60%, #7df7c5, transparent 60%)}
+
+    .wrap{position:relative; height:100%; display:grid; place-items:center; padding:16px}
+    .frame{width:min(92vw, 980px); display:grid; gap:16px}
+
+    .header{display:flex; align-items:center; justify-content:space-between; gap:12px}
+    .brand{display:flex; align-items:center; gap:12px}
+    .logo{ width:44px; height:44px; border-radius:14px; background:
+      radial-gradient(circle at 30% 30%, #9ad0ff 0 30%, transparent 30%),
+      linear-gradient(145deg, #3852ff, #19b1a3);
+      box-shadow: var(--shadow); position:relative }
+    .logo::after{content:""; position:absolute; inset:-1px; border-radius:14px; background:linear-gradient( to bottom right, rgba(255,255,255,.25), rgba(255,255,255,0) 40%); mix-blend:screen}
+    .title{font-weight:800; letter-spacing:.4px}
+    .subtitle{font-size:.9rem; color:var(--muted)}
+
+    .controls{display:flex; flex-wrap:wrap; gap:8px}
+    .btn{ -webkit-tap-highlight-color: transparent; appearance:none; border:0; cursor:pointer; color:var(--text);
+      background:var(--card); padding:10px 14px; border-radius:14px; box-shadow: var(--shadow);
+      transition: transform .12s ease, background .2s ease; font-weight:600; letter-spacing:.3px }
+    .btn:hover{transform: translateY(-1px)}
+    .btn:active{transform: translateY(1px) scale(.98)}
+    .btn.primary{background: linear-gradient(135deg, rgba(118,167,255,.25), rgba(125,247,197,.22));}
+    .seg{display:flex; gap:6px; background:var(--card); padding:6px; border-radius:14px; box-shadow: var(--shadow)}
+    .seg .active{background:linear-gradient(135deg, rgba(138,175,255,.35), rgba(125,247,197,.30));}
+
+    .board-wrap{display:grid; grid-template-columns: 1fr; gap:14px}
+    .board{
+      width:min(92vw, 560px); aspect-ratio:1/1; margin-inline:auto;
+      display:grid; grid-template-columns:repeat(3,1fr); gap:14px; padding:14px;
+      border-radius:24px; background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02)); box-shadow: var(--shadow);
+      perspective: 900px; position:relative;
+      will-change: transform
+    }
+
+    .cell{
+      position:relative; background: linear-gradient(145deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border-radius:22px; box-shadow: var(--shadow);
+      display:grid; place-items:center; font-size: clamp(42px, 9vw, 78px); font-weight:900;
+      text-shadow: 0 0 18px rgba(255,255,255,.25);
+      user-select:none; -webkit-user-select:none; cursor:pointer;
+      will-change: transform;
+      transition: transform .18s cubic-bezier(.2,.8,.2,1), background .2s ease;
+    }
+    @media (hover:hover){ .cell:hover{transform: translateZ(4px) rotateX(4deg) rotateY(-4deg)} }
+    .cell:active{transform: translateZ(0) scale(.98)}
+
+    .cell.x{color:var(--x)}
+    .cell.o{color:var(--o)}
+
+    .stat{display:flex; align-items:center; justify-content:center; gap:12px; color:var(--muted)}
+    .badge{padding:8px 12px; border-radius:999px; background:var(--card); box-shadow: var(--shadow); font-weight:700}
+
+    .cell.win{ box-shadow: 0 0 0 2px var(--win), 0 10px 26px rgba(255, 224, 138, .25), inset 0 0 0 1px var(--edge); background: linear-gradient(145deg, rgba(255,224,138,.12), rgba(255,255,255,.02)); }
+
+    /* Splash */
+    .splash{position:fixed; inset:0; background: radial-gradient(1200px 800px at 10% 20%, #141b33 0%, #0b0f19 60%, #070a12 100%); display:grid; place-items:center; z-index:50}
+    .s-card{width:min(92vw, 560px); padding:28px; border-radius:28px; background:linear-gradient(165deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); box-shadow: var(--shadow); text-align:center; transform: translateY(10px) scale(.98); opacity:0; animation: pop .6s .1s forwards}
+    .s-logo{width:68px; height:68px; margin:0 auto 10px; border-radius:20px; background:linear-gradient(145deg, #3852ff, #19b1a3); box-shadow: var(--shadow)}
+    .progress{height:10px; background:var(--card); border-radius:999px; overflow:hidden; box-shadow: var(--shadow); margin-top:16px}
+    .bar{height:100%; width:0%; background:linear-gradient(90deg, var(--accent), var(--accent2)); animation: load 1.1s .2s both}
+    @keyframes pop{to{transform:none; opacity:1}}
+    @keyframes load{to{width:100%}}
+    .hide{opacity:0; pointer-events:none; transition: opacity .42s ease}
+
+    /* Modal */
+    .modal{position:fixed; inset:0; display:grid; place-items:center; background:rgba(2,6,12,.5); backdrop-filter: blur(6px); opacity:0; pointer-events:none; transition: opacity .2s ease; z-index:40}
+    .modal.show{opacity:1; pointer-events:auto}
+    .m-card{width:min(92vw, 480px); padding:22px; border-radius:22px; background:linear-gradient(165deg, rgba(255,255,255,.08), rgba(255,255,255,.03)); box-shadow: var(--shadow); text-align:center}
+
+    @media (max-width:520px){
+      .header{flex-direction:column; align-items:flex-start}
+      .title{font-size:1.25rem}
+      .subtitle{font-size:.85rem}
+    }
+  </style>
+</head>
+<body>
+  <div class="orb one"></div>
+  <div class="orb two"></div>
+
+  <!-- Splash / Kirish animatsiyasi -->
+  <div id="splash" class="splash">
+    <div class="s-card">
+      <div class="s-logo"></div>
+      <h1 style="margin:6px 0 2px">FERKAVEKA (X/0)</h1>
+      <div class="subtitle">3D Tic‑Tac‑Toe — Ferkaveka botga qarshi</div>
+      <div class="progress"><div class="bar"></div></div>
+      <div class="subtitle" style="margin-top:10px">Yuklanmoqda…</div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="frame" style="transform-style:preserve-3d">
+      <div class="header">
+        <div class="brand">
+          <div class="logo"></div>
+          <div>
+            <div class="title">Ferkaveka — 3D (X/0)</div>
+            <div class="subtitle">Zamonaviy dizayn • Mobilga mos • Ferkaveka bot</div>
+          </div>
+        </div>
+        <div class="controls">
+          <div class="seg" role="tablist" aria-label="Qiyinlik">
+            <button id="easyBtn" class="btn active" role="tab" aria-selected="true">Oson</button>
+            <button id="hardBtn" class="btn" role="tab" aria-selected="false">Qiyin</button>
+          </div>
+          <button id="newGame" class="btn primary">Yangi o‘yin</button>
+          <button id="resetScore" class="btn">Hisobni tozalash</button>
+        </div>
+      </div>
+
+      <div class="board-wrap">
+        <div id="board" class="board" aria-label="O‘yin maydoni" role="grid"></div>
+        <div class="stat">
+          <span class="badge">Navbat: <b id="turn">Siz (X)</b></span>
+          <span class="badge">Hisob — Siz: <b id="sScore">0</b> • Ferkaveka: <b id="bScore">0</b> • Durrang: <b id="dScore">0</b></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="modal" class="modal" aria-hidden="true" role="dialog">
+    <div class="m-card">
+      <h2 id="mTitle" style="margin:0 0 6px">Natija</h2>
+      <p id="mText" class="subtitle" style="margin:0 0 16px">—</p>
+      <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap">
+        <button class="btn primary" id="playAgain">Qayta o‘ynash</button>
+        <button class="btn" id="closeModal">Yopish</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  ;(() => {
+    const boardEl = document.getElementById('board');
+    const turnEl = document.getElementById('turn');
+    const modal = document.getElementById('modal');
+    const mTitle = document.getElementById('mTitle');
+    const mText = document.getElementById('mText');
+    const playAgain = document.getElementById('playAgain');
+    const closeModal = document.getElementById('closeModal');
+    const newGameBtn = document.getElementById('newGame');
+    const resetScoreBtn = document.getElementById('resetScore');
+    const easyBtn = document.getElementById('easyBtn');
+    const hardBtn = document.getElementById('hardBtn');
+
+    const WIN_LINES = [
+      [0,1,2],[3,4,5],[6,7,8],
+      [0,3,6],[1,4,7],[2,5,8],
+      [0,4,8],[2,4,6]
+    ];
+
+    let board = Array(9).fill(null); // null | 'X' | 'O'
+    let user = 'X', bot = 'O';
+    let userTurn = true;
+    let lock = false;
+    let scores = { user:0, bot:0, draw:0 };
+    let hard = false;
+
+    const saved = JSON.parse(localStorage.getItem('fxo_scores') || '{}');
+    if (saved.user) scores.user = saved.user;
+    if (saved.bot) scores.bot = saved.bot;
+    if (saved.draw) scores.draw = saved.draw;
+    const sScore = document.getElementById('sScore');
+    const bScore = document.getElementById('bScore');
+    const dScore = document.getElementById('dScore');
+    const syncScore = ()=>{ sScore.textContent=scores.user; bScore.textContent=scores.bot; dScore.textContent=scores.draw; localStorage.setItem('fxo_scores', JSON.stringify(scores)); };
+    syncScore();
+
+    function setDifficulty(isHard){
+      hard = isHard;
+      easyBtn.classList.toggle('active', !isHard);
+      hardBtn.classList.toggle('active', isHard);
+    }
+    easyBtn.onclick = ()=> setDifficulty(false);
+    hardBtn.onclick = ()=> setDifficulty(true);
+
+    // --- Create cells ONCE for speed
+    const cells = [];
+    function initBoard(){
+      boardEl.innerHTML='';
+      for(let i=0;i<9;i++){
+        const c = document.createElement('button');
+        c.className = 'cell';
+        c.setAttribute('role','gridcell');
+        c.setAttribute('aria-label', `Katak ${i+1}`);
+        c.addEventListener('click', ()=> onUserMove(i));
+        cells.push(c);
+        boardEl.appendChild(c);
+      }
+      renderAll();
+    }
+
+    function renderCell(i){
+      const v = board[i];
+      const c = cells[i];
+      c.textContent = v ? v : '';
+      c.classList.toggle('x', v==='X');
+      c.classList.toggle('o', v==='O');
+      c.classList.remove('win');
+    }
+    function renderAll(){ for(let i=0;i<9;i++) renderCell(i); turnEl.textContent = userTurn ? 'Siz (X)' : 'Ferkaveka (O)'; }
+
+    const emptyIdx = (b)=> b.map((v,idx)=> v?null:idx).filter(v=> v!==null);
+    function checkWinner(b){
+      for(const [a,k,l] of WIN_LINES){
+        if(b[a] && b[a]===b[k] && b[a]===b[l]) return {w:b[a], line:[a,k,l]};
+      }
+      if(!b.includes(null)) return {w:'D', line:[]};
+      return null;
+    }
+
+    function endGame(res){
+      lock = true;
+      if(res.w==='X'){ scores.user++; mTitle.textContent='🎉 G‘alaba!'; mText.textContent='Tabriklaymiz! Siz yutdingiz.'; }
+      else if(res.w==='O'){ scores.bot++; mTitle.textContent='🤖 Ferkaveka yutdi'; mText.textContent='Keyingi safar albatta!'; }
+      else { scores.draw++; mTitle.textContent='🤝 Durrang'; mText.textContent='Zo‘r o‘yin bo‘ldi!'; }
+      syncScore();
+      res.line.forEach(i=> cells[i]?.classList.add('win'));
+      setTimeout(()=> showModal(true), 320);
+    }
+
+    function onUserMove(i){
+      if(lock || !userTurn || board[i]) return;
+      board[i] = user; renderCell(i);
+      const res = checkWinner(board);
+      if(res){ endGame(res); return; }
+      userTurn = false; renderAll();
+      lock = true;
+      setTimeout(()=> { botMove(); lock=false; }, 160);
+    }
+
+    // ---- BOT (Ferkaveka)
+    function smartRandomMove(b, ai){
+      // 1) Win if possible
+      for(const i of emptyIdx(b)){
+        const bb = b.slice(); bb[i]=ai; if(checkWinner(bb)?.w===ai) return i;
+      }
+      // 2) Block user win
+      const hu = user;
+      for(const i of emptyIdx(b)){
+        const bb = b.slice(); bb[i]=hu; if(checkWinner(bb)?.w===hu) return i;
+      }
+      // 3) Prefer center, corners, sides
+      const pref = [4,0,2,6,8,1,3,5,7];
+      for(const p of pref) if(b[p]==null) return p;
+      return null;
+    }
+
+    const memo = new Map(); // transposition table for speed
+    function bestMove(b, ai){
+      let bestScore = -Infinity, move=null;
+      for(const i of emptyIdx(b)){
+        const bb = b.slice(); bb[i]=ai;
+        const sc = minimax(bb, false, ai, user, -Infinity, Infinity);
+        if(sc>bestScore){ bestScore=sc; move=i; }
+      }
+      return move;
+    }
+
+    function keyOf(b, isMax){ return b.join('')+'|'+(isMax?'1':'0'); }
+
+    function minimax(b, isMax, ai, hu, alpha, beta){
+      const k = keyOf(b, isMax);
+      if(memo.has(k)) return memo.get(k);
+      const res = checkWinner(b);
+      if(res){
+        const val = res.w===ai ? 10 : res.w===hu ? -10 : 0;
+        memo.set(k,val); return val;
+      }
+      if(isMax){
+        let m = -Infinity;
+        for(const i of emptyIdx(b)){
+          const bb = b.slice(); bb[i]=ai;
+          const sc = minimax(bb, false, ai, hu, alpha, beta);
+          m = Math.max(m, sc); alpha = Math.max(alpha, sc); if(beta<=alpha) break;
+        }
+        memo.set(k,m); return m;
+      } else {
+        let m = Infinity;
+        for(const i of emptyIdx(b)){
+          const bb = b.slice(); bb[i]=hu;
+          const sc = minimax(bb, true, ai, hu, alpha, beta);
+          m = Math.min(m, sc); beta = Math.min(beta, sc); if(beta<=alpha) break;
+        }
+        memo.set(k,m); return m;
+      }
+    }
+
+    function botMove(){
+      const move = hard ? bestMove(board, bot) : smartRandomMove(board, bot);
+      if(move==null){ const res = checkWinner(board); if(res) endGame(res); return; }
+      board[move] = bot; renderCell(move);
+      const res = checkWinner(board);
+      if(res){ endGame(res); return; }
+      userTurn = true; renderAll();
+    }
+
+    function showModal(v){ modal.classList.toggle('show', v); modal.setAttribute('aria-hidden', v? 'false':'true'); }
+
+    function resetBoard(firstUser=true){
+      board = Array(9).fill(null); userTurn = firstUser; lock=false; memo.clear();
+      for(let i=0;i<9;i++) renderCell(i);
+      renderAll();
+      if(!firstUser){ setTimeout(()=>{ botMove(); }, 220); }
+    }
+
+    function newGame(){ resetBoard(true); }
+
+    newGameBtn.onclick = newGame;
+    resetScoreBtn.onclick = ()=>{ scores={user:0, bot:0, draw:0}; syncScore(); };
+    playAgain.onclick = ()=>{ showModal(false); resetBoard(true); };
+    closeModal.onclick = ()=> showModal(false);
+
+    // init
+    initBoard();
+
+    // Splash hide after load anim
+    const splash = document.getElementById('splash');
+    setTimeout(()=>{ splash.classList.add('hide'); setTimeout(()=> splash.remove(), 420); }, 1200);
+
+  })();
+  </script>
+</body>
+</html>
