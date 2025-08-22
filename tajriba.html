@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Qurilma Monitoring</title>
+<style>
+  body {
+    margin:0;
+    font-family: "Segoe UI", sans-serif;
+    background: linear-gradient(135deg, #000428, #004e92);
+    color:#fff;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    min-height:100vh;
+    padding:20px;
+    overflow-x:hidden;
+  }
+  h1 {
+    margin:20px 0;
+    text-align:center;
+    font-size:2.5em;
+    color:#00f7ff;
+    text-shadow:0 0 15px #00f7ff, 0 0 35px #00f7ff;
+    animation: glow 2s infinite alternate;
+  }
+  @keyframes glow {
+    from { text-shadow:0 0 10px #00f7ff; }
+    to { text-shadow:0 0 40px #00f7ff, 0 0 70px #00f7ff; }
+  }
+  .grid {
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(260px,1fr));
+    gap:15px;
+    width:100%;
+    max-width:1300px;
+  }
+  .box {
+    background:rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.2);
+    border-radius:15px;
+    padding:20px;
+    box-shadow:0 0 25px rgba(0,0,0,0.6);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    backdrop-filter: blur(10px);
+    animation: fadeIn 0.7s ease forwards;
+  }
+  .box:hover {
+    transform:translateY(-6px) scale(1.03);
+    box-shadow:0 0 45px #00f7ff;
+  }
+  @keyframes fadeIn {
+    from { opacity:0; transform:translateY(20px); }
+    to { opacity:1; transform:translateY(0); }
+  }
+  .label {
+    color:#00f7ff;
+    font-weight:bold;
+    display:block;
+    margin-bottom:6px;
+    font-size:1.05em;
+  }
+  .value {
+    font-size:1em;
+    color:#fff;
+    text-shadow:0 0 6px rgba(0,247,255,0.6);
+  }
+</style>
+</head>
+<body>
+  <h1>📊 Qurilma Monitoring Paneli</h1>
+
+  <div class="grid">
+    <div class="box"><span class="label">🖥 Qurilma turi:</span><span id="deviceType" class="value"></span></div>
+    <div class="box"><span class="label">⚙️ Operatsion tizim:</span><span id="os" class="value"></span></div>
+    <div class="box"><span class="label">🌐 Brauzer:</span><span id="browser" class="value"></span></div>
+    <div class="box"><span class="label">🎮 GPU:</span><span id="gpu" class="value"></span></div>
+    <div class="box"><span class="label">⚡ FPS:</span><span id="fps" class="value"></span></div>
+    <div class="box"><span class="label">🔋 Batareya:</span><span id="battery" class="value"></span></div>
+    <div class="box"><span class="label">🖼 Ekran:</span><span id="screenInfo" class="value"></span></div>
+    <div class="box"><span class="label">📐 Orientatsiya:</span><span id="orientation" class="value"></span></div>
+    <div class="box"><span class="label">🌍 Tarmoq:</span><span id="network" class="value"></span></div>
+    <div class="box"><span class="label">📡 Online Status:</span><span id="online" class="value"></span></div>
+    <div class="box"><span class="label">⏳ Uptime:</span><span id="uptime" class="value"></span></div>
+    <div class="box"><span class="label">🕒 Vaqt va Sana:</span><span id="time" class="value"></span></div>
+    <div class="box"><span class="label">💾 RAM (taxminiy):</span><span id="ram" class="value"></span></div>
+    <div class="box"><span class="label">🖥 CPU Yadro soni:</span><span id="cpu" class="value"></span></div>
+    <div class="box"><span class="label">📊 Xotira ishlatilishi:</span><span id="memory" class="value"></span></div>
+    <div class="box"><span class="label">📱 Touch qo‘llab-quvvatlash:</span><span id="support" class="value"></span></div>
+    <div class="box"><span class="label">🌎 Til:</span><span id="lang" class="value"></span></div>
+    <div class="box"><span class="label">📡 IP manzil:</span><span id="ip" class="value"></span></div>
+    <div class="box"><span class="label">🔧 Qurilma nomi:</span><span id="appName" class="value"></span></div>
+    <div class="box"><span class="label">📦 Qurilma versiyasi:</span><span id="appVersion" class="value"></span></div>
+    <div class="box"><span class="label">⚙️ Browser Engine:</span><span id="engine" class="value"></span></div>
+    <div class="box"><span class="label">🍪 Cookie qo‘llab-quvvatlash:</span><span id="cookie" class="value"></span></div>
+    <div class="box"><span class="label">💾 LocalStorage:</span><span id="local" class="value"></span></div>
+    <div class="box"><span class="label">📂 SessionStorage:</span><span id="session" class="value"></span></div>
+    <div class="box"><span class="label">🚫 Do Not Track:</span><span id="dnt" class="value"></span></div>
+    <div class="box"><span class="label">⌨️ Klaviatura tili:</span><span id="keyboard" class="value"></span></div>
+    <div class="box"><span class="label">📶 Ping:</span><span id="ping" class="value"></span></div>
+  </div>
+
+<script>
+  const ua = navigator.userAgent.toLowerCase();
+
+  // Qurilma turi
+  document.getElementById("deviceType").innerText = /mobile|android|iphone/.test(ua) ? "📱 Mobil" : "💻 Desktop";
+
+  // OS
+  if(ua.includes("windows")) document.getElementById("os").innerText = "Windows";
+  else if(ua.includes("android")) document.getElementById("os").innerText = "Android";
+  else if(ua.includes("linux")) document.getElementById("os").innerText = "Linux";
+  else if(ua.includes("mac")) document.getElementById("os").innerText = "macOS";
+  else document.getElementById("os").innerText = "Aniqlanmadi";
+
+  // Brauzer
+  if(ua.includes("chrome")) document.getElementById("browser").innerText = "Chrome/Chromium";
+  else if(ua.includes("firefox")) document.getElementById("browser").innerText = "Firefox";
+  else if(ua.includes("safari")) document.getElementById("browser").innerText = "Safari";
+  else if(ua.includes("edg")) document.getElementById("browser").innerText = "Edge";
+  else document.getElementById("browser").innerText = navigator.userAgent;
+
+  // GPU
+  let canvas = document.createElement("canvas");
+  let gl = canvas.getContext("webgl");
+  let debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
+  document.getElementById("gpu").innerText = debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : "Aniqlanmadi";
+
+  // FPS
+  let fpsElem = document.getElementById("fps");
+  let lastFrame = performance.now(), frames = 0;
+  function fpsCounter(now){
+    frames++;
+    if(now - lastFrame >= 1000){
+      fpsElem.innerText = frames + " FPS";
+      frames = 0;
+      lastFrame = now;
+    }
+    requestAnimationFrame(fpsCounter);
+  }
+  requestAnimationFrame(fpsCounter);
+
+  // Battery
+  if(navigator.getBattery){
+    navigator.getBattery().then(bat=>{
+      function updateBattery(){
+        document.getElementById("battery").innerText =
+          Math.round(bat.level*100) + "% " + (bat.charging ? "🔌 Zaryadda" : "Batareya ishlayapti");
+      }
+      updateBattery();
+      bat.addEventListener("levelchange", updateBattery);
+      bat.addEventListener("chargingchange", updateBattery);
+    });
+  }
+
+  // Screen
+  document.getElementById("screenInfo").innerText = screen.width + "x" + screen.height + " px | DPI: " + window.devicePixelRatio;
+
+  // Orientation
+  function updateOrientation(){
+    document.getElementById("orientation").innerText = window.screen.orientation ? window.screen.orientation.type : "Aniqlanmadi";
+  }
+  updateOrientation();
+  window.addEventListener("orientationchange", updateOrientation);
+
+  // Network
+  let connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  document.getElementById("network").innerText = connection ? connection.effectiveType + " | " + (connection.downlink || "?") + "Mb/s" : "Aniqlanmadi";
+
+  // Online
+  function updateOnline(){ document.getElementById("online").innerText = navigator.onLine ? "🟢 Online" : "🔴 Offline"; }
+  updateOnline();
+  window.addEventListener("online", updateOnline);
+  window.addEventListener("offline", updateOnline);
+
+  // Uptime
+  function updateUptime(){
+    let sec = Math.floor(performance.now()/1000);
+    let m = Math.floor(sec/60), s = sec%60;
+    document.getElementById("uptime").innerText = m + " daqiqa " + s + " soniya";
+  }
+  setInterval(updateUptime, 1000);
+
+  // Time
+  function updateTime(){ document.getElementById("time").innerText = new Date().toLocaleString(); }
+  setInterval(updateTime, 1000); updateTime();
+
+  // RAM & CPU
+  document.getElementById("ram").innerText = navigator.deviceMemory ? navigator.deviceMemory + " GB" : "Aniqlanmadi";
+  document.getElementById("cpu").innerText = navigator.hardwareConcurrency ? navigator.hardwareConcurrency + " yadro" : "Aniqlanmadi";
+
+  // Memory
+  if(performance.memory){
+    function updateMemory(){
+      let used = (performance.memory.usedJSHeapSize/1048576).toFixed(1);
+      let total = (performance.memory.jsHeapSizeLimit/1048576).toFixed(0);
+      document.getElementById("memory").innerText = used + " MB / " + total + " MB";
+    }
+    setInterval(updateMemory, 2000);
+    updateMemory();
+  } else document.getElementById("memory").innerText = "Qo‘llab-quvvatlanmaydi.";
+
+  // Support
+  document.getElementById("support").innerText = ( 'ontouchstart' in window ? "✅ Touch mavjud" : "❌ Faqat sichqoncha" );
+
+  // Lang
+  document.getElementById("lang").innerText = navigator.language;
+
+  // IP
+  fetch("https://api64.ipify.org?format=json").then(r=>r.json()).then(d=>{document.getElementById("ip").innerText=d.ip;});
+
+  // AppName / Version / Engine
+  document.getElementById("appName").innerText = navigator.appName;
+  document.getElementById("appVersion").innerText = navigator.appVersion;
+  document.getElementById("engine").innerText = navigator.product;
+
+  // Cookie / Storage
+  document.getElementById("cookie").innerText = navigator.cookieEnabled ? "✅ Yoqilgan" : "❌ O‘chirilgan";
+  document.getElementById("local").innerText = window.localStorage ? "✅ Mavjud" : "❌ Yo‘q";
+  document.getElementById("session").innerText = window.sessionStorage ? "✅ Mavjud" : "❌ Yo‘q";
+
+  // Do Not Track
+  document.getElementById("dnt").innerText = navigator.doNotTrack=="1" ? "✅ Yoqilgan" : "❌ O‘chirilgan";
+
+  // Keyboard
+  document.getElementById("keyboard").innerText = navigator.language;
+
+  // Ping test
+  async function testPing(){
+    let start = performance.now();
+    await fetch("https://api64.ipify.org?format=json");
+    let end = performance.now();
+    document.getElementById("ping").innerText = Math.round(end-start)+" ms";
+  }
+  setInterval(testPing, 5000);
+  testPing();
+</script>
+</body>
+</html>

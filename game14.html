@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>💻 Hacker Dashboard Prank</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+body {
+  margin:0;
+  font-family:'Share Tech Mono', monospace;
+  background:#000;
+  color:#0f0;
+  overflow:hidden;
+}
+#terminal {
+  padding:20px;
+  height:100vh;
+  overflow-y:auto;
+  box-sizing:border-box;
+}
+.line {
+  display:block;
+  animation: glow 1s infinite alternate;
+}
+@keyframes glow {
+  from { text-shadow:0 0 5px #0f0; }
+  to { text-shadow:0 0 20px #0f0; }
+}
+.glitch {
+  color:#0f0;
+  animation: glitchAnim 1s infinite;
+}
+@keyframes glitchAnim {
+  0% { text-shadow: 2px 0 #0f0, -2px 2px #0ff; transform: rotate(0deg); }
+  25% { text-shadow: -2px 0 #0ff, 2px -2px #0f0; transform: rotate(-1deg); }
+  50% { text-shadow: 2px 2px #0ff, -2px -2px #0f0; transform: rotate(1deg); }
+  75% { text-shadow: -2px 2px #0ff, 2px -2px #0f0; transform: rotate(-1deg); }
+  100% { text-shadow: 2px -2px #0ff, -2px 2px #0f0; transform: rotate(0deg); }
+}
+</style>
+</head>
+<body>
+<div id="terminal"></div>
+
+<script>
+const terminal = document.getElementById('terminal');
+const fakeCommands = [
+  "Connecting to target device...",
+  "Authentication bypassed...",
+  "Root access granted...",
+  "Injecting monitoring scripts...",
+  "Gathering system info...",
+  "Scanning CPU & RAM...",
+  "Fetching GPU stats...",
+  "Collecting network logs...",
+  "Encrypting communication channel...",
+  "Device successfully linked ✔️",
+  "Fetching files from Documents...",
+  "Extracting secret keys...",
+  "Monitoring user activity...",
+  "Capturing screenshots...",
+  "Logging keystrokes...",
+  "Exporting browser history...",
+  "Tracking geolocation...",
+  "Accessing camera & microphone...",
+  "Injecting virus scan routine...",
+  "Finalizing connection..."
+];
+
+// Qo‘shimcha random malumotlar
+const fakeData = [
+  "CPU: 92% usage",
+  "RAM: 8.2GB / 16GB",
+  "GPU: NVIDIA GTX 1080 Ti",
+  "Disk C: 256GB / 512GB free",
+  "IP: 192.168.1.101",
+  "MAC: AC:DE:48:00:11:22",
+  "Network: WiFi 300Mb/s",
+  "OS: Windows 10 Pro",
+  "Browser: Chrome 138",
+  "Battery: 67% Charging",
+  "Location: Lat 41.3, Lon 69.2",
+  "Camera: Active",
+  "Microphone: Active",
+  "Clipboard: Monitored",
+  "Processes: 124 running",
+  "Firewall: Disabled",
+  "Root Access: Enabled",
+  "System Uptime: 3 days 14h",
+  "Connected Devices: 5",
+  "USB Devices: 2 connected"
+];
+
+function randomColor() {
+  return '#' + Math.floor(Math.random()*16777215).toString(16);
+}
+
+function addLine(text) {
+  const span = document.createElement('span');
+  span.classList.add('line','glitch');
+  span.innerText = text;
+  terminal.appendChild(span);
+  terminal.scrollTop = terminal.scrollHeight;
+}
+
+// Barcha komandalarni birdaniga chiqarish
+let index = 0;
+let dataIndex = 0;
+
+function addNext() {
+  if(index < fakeCommands.length) {
+    addLine(fakeCommands[index++]);
+    if(Math.random()<0.7 && dataIndex<fakeData.length){
+      addLine(fakeData[dataIndex++]);
+    }
+    setTimeout(addNext, 400 + Math.random()*300);
+  } else {
+    // Final alert
+    setTimeout(()=>{ alert("✅ Device successfully linked! Monitoring activated!"); },500);
+  }
+}
+
+addNext();
+
+// Random glitch color
+setInterval(()=>{
+  const lines = document.querySelectorAll('.glitch');
+  lines.forEach(line=>{
+    if(Math.random()<0.3){
+      line.style.color = randomColor();
+      line.style.textShadow = `${Math.random()*5}px ${Math.random()*5}px #0f0, ${-Math.random()*5}px ${-Math.random()*5}px #0ff`;
+    }
+  });
+},200);
+</script>
+</body>
+</html>
