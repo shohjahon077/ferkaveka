@@ -1,257 +1,201 @@
 <!DOCTYPE html>
 <html lang="uz">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ferkaveka AI Chat Pro</title>
-<style>
-/* ===== GLOBAL ===== */
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
-body,html{width:100%;height:100%;overflow:hidden;display:flex;justify-content:center;align-items:center;background:#111;transition:background 1s;}
-body{background:linear-gradient(270deg,#0f0c29,#302b63,#24243e);background-size:600% 600%;animation:bgAnim 20s ease infinite;}
-@keyframes bgAnim{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%;}}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zamonaviy Musiqa Pleyeri</title>
+  <style>
+    body {
+      height: 100vh;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      font-family: 'Poppins', sans-serif;
+      color: white;
+    }
 
-/* ===== LOADER ===== */
-#loader{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);display:flex;flex-direction:column;justify-content:center;align-items:center;color:#fff;font-size:1.2rem;z-index:9999;}
-.spinner{border:6px solid rgba(255,255,255,0.2);border-top:6px solid #00ffcc;border-radius:50%;width:60px;height:60px;margin-bottom:20px;animation:spin 1s linear infinite;}
-@keyframes spin{100%{transform:rotate(360deg)}}
+    .player {
+      width: 350px;
+      padding: 25px;
+      border-radius: 25px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(15px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      text-align: center;
+    }
 
-/* ===== CHAT CONTAINER ===== */
-.chat-container{display:none;width:95%;max-width:480px;height:90vh;background:rgba(255,255,255,0.08);backdrop-filter:blur(12px);border-radius:20px;box-shadow:0 0 25px rgba(0,0,0,0.4);display:flex;flex-direction:column;position:relative;overflow:hidden;}
-#profileBar{display:flex;align-items:center;gap:10px;padding:10px;background:rgba(0,0,0,0.3);border-bottom:1px solid rgba(255,255,255,0.1);}
-#profileBar img{width:40px;height:40px;border-radius:50%;border:2px solid #00ffcc;}
-#profileBar span{color:#fff;font-weight:bold;font-size:1rem;}
-.chat-box{flex:1;padding:10px;overflow-y:auto;color:#fff;display:flex;flex-direction:column;gap:10px;}
-.msg{max-width:80%;padding:10px 14px;border-radius:12px;line-height:1.4em;animation:fadeIn 0.4s ease;position:relative;}
-.bot{background:rgba(0,255,204,0.2);border-left:4px solid #00ffcc;align-self:flex-start;}
-.user{background:rgba(255,255,255,0.15);border-right:4px solid #ff9900;align-self:flex-end;}
-.msg span.time{position:absolute;bottom:-18px;right:10px;font-size:10px;color:#ccc;}
-@keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+    .cover {
+      width: 220px;
+      height: 220px;
+      border-radius: 20px;
+      margin: auto;
+      overflow: hidden;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+      margin-bottom: 20px;
+    }
+    .cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      animation: rotate 20s linear infinite;
+    }
+    @keyframes rotate {
+      from {transform: rotate(0);}
+      to {transform: rotate(360deg);}
+    }
 
-/* ===== INPUT AREA ===== */
-.input-area{display:flex;gap:10px;padding:10px;background:rgba(0,0,0,0.3);}
-.input-area input{flex:1;padding:12px;border:none;border-radius:30px 0 0 30px;background:rgba(255,255,255,0.1);color:#fff;outline:none;transition:0.3s;}
-.input-area input:focus{background:rgba(255,255,255,0.2);box-shadow:0 0 10px #00ffcc;}
-.input-area button{padding:12px 20px;border:none;border-radius:0 30px 30px 0;background:linear-gradient(45deg,#00ffcc,#0066ff);color:#fff;cursor:pointer;transition:0.3s;}
-.input-area button:hover{transform:scale(1.05);}
+    .title {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .artist {
+      font-size: 14px;
+      opacity: 0.8;
+      margin-bottom: 15px;
+    }
 
-/* ===== BUTTONS ===== */
-.btns{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
-.btns button{padding:12px;border-radius:12px;border:none;background:rgba(255,255,255,0.1);color:#fff;font-size:1rem;cursor:pointer;transition:0.3s;animation:popIn 0.4s ease;}
-.btns button:hover{background:rgba(0,255,204,0.3);transform:scale(1.1);}
-@keyframes popIn{from{opacity:0;transform:translateY(20px) scale(0.9);}to{opacity:1;transform:translateY(0) scale(1);}}
+    .controls {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      margin: 15px 0;
+    }
 
-/* ===== PARTICLES ===== */
-.particle{position:absolute;background:rgba(255,255,255,0.4);border-radius:50%;animation:float linear infinite;}
-@keyframes float{from{transform:translateY(100vh) scale(0);opacity:0;}to{transform:translateY(-10vh) scale(1);opacity:1;}}
+    button {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      border-radius: 50%;
+      width: 55px;
+      height: 55px;
+      font-size: 20px;
+      color: white;
+      cursor: pointer;
+      transition: 0.3s;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    }
+    button:hover {
+      background: rgba(255,255,255,0.4);
+      transform: scale(1.1);
+    }
 
-/* ===== TYPING ANIMATION ===== */
-.typing{display:flex;gap:4px;}
-.typing span{width:8px;height:8px;background:#00ffcc;border-radius:50%;animation:dot 1s infinite;}
-.typing span:nth-child(2){animation-delay:0.2s;}
-.typing span:nth-child(3){animation-delay:0.4s;}
-@keyframes dot{0%,80%,100%{transform:scale(0);}40%{transform:scale(1);}}
-</style>
+    input[type="range"] {
+      width: 100%;
+      -webkit-appearance: none;
+      height: 6px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.3);
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #fff;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .volume-control {
+      margin-top: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+  </style>
 </head>
 <body>
-<!-- Loader -->
-<div id="loader">
-  <div class="spinner"></div>
-  Yuklanmoqda...
-</div>
+  <div class="player">
+    <div class="cover"><img id="cover" src="cover1.jpg" alt="cover"></div>
+    <div class="title" id="title">Qo‘shiq nomi</div>
+    <div class="artist" id="artist">Muallif</div>
 
-<!-- PROFIL MODAL -->
-<div id="profileModal" style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:flex;justify-content:center;align-items:center;z-index:10000;flex-direction:column;gap:15px;border-radius:20px;">
-  <h2 style="color:#fff;font-size:1.5rem;">Profil yaratish</h2>
-  <input id="profileNameInput" placeholder="Ismingizni kiriting..." style="padding:10px 15px;border-radius:10px;border:none;outline:none;font-size:1rem;">
-  <div style="display:flex;gap:10px;">
-    <button class="emojiBtn" style="font-size:2rem;">🙂</button>
-    <button class="emojiBtn" style="font-size:2rem;">😂</button>
-    <button class="emojiBtn" style="font-size:2rem;">😍</button>
-    <button class="emojiBtn" style="font-size:2rem;">😎</button>
+    <audio id="audio" src="music1.mp3"></audio>
+
+    <input type="range" id="progress" value="0">
+
+    <div class="controls">
+      <button id="prev">⏮</button>
+      <button id="play">▶️</button>
+      <button id="next">⏭</button>
+    </div>
+
+    <div class="volume-control">
+      🔉 <input type="range" id="volume" min="0" max="1" step="0.1" value="1"> 🔊
+    </div>
   </div>
-  <button id="profileConfirmBtn" style="padding:10px 20px;border-radius:10px;border:none;background:#00ffcc;color:#000;font-weight:bold;cursor:pointer;">Tasdiqlash</button>
-</div>
 
-<!-- Chat -->
-<div class="chat-container">
-  <div id="profileBar">
-    <img id="userAvatar" src="https://via.placeholder.com/40" alt="Profil">
-    <span id="userName">Foydalanuvchi</span>
-    <button id="speechToggle" style="margin-left:auto;padding:5px 10px;border:none;border-radius:8px;background:#00ffcc;color:#000;cursor:pointer;">🔊 O‘qish</button>
-  </div>
-  <div class="chat-box" id="chatBox"></div>
-  <div class="input-area">
-    <input type="text" id="userInput" placeholder="Xabar yozing...">
-    <button onclick="sendMsg()">➤</button>
-  </div>
-</div>
+  <script>
+    const songs = [
+      {title: "Qo‘shiq 1", artist: "San'atkor 1", src: "music1.mp3", cover: "cover1.jpg"},
+      {title: "Qo‘shiq 2", artist: "San'atkor 2", src: "music2.mp3", cover: "cover2.jpg"},
+      {title: "Qo‘shiq 3", artist: "San'atkor 3", src: "music3.mp3", cover: "cover3.jpg"}
+    ];
 
-<script>
-let stats={messages:0,buttonsClicked:0,lastActive:new Date()};
-let chatBox=document.getElementById("chatBox");
-let userName="Foydalanuvchi";
-let userEmoji="🙂";
-let profileModal=document.getElementById("profileModal");
-let profileInput=document.getElementById("profileNameInput");
-let profileConfirmBtn=document.getElementById("profileConfirmBtn");
-let emojiButtons=document.querySelectorAll(".emojiBtn");
-let speechEnabled=true;
-let speechToggle=document.getElementById("speechToggle");
+    let index = 0;
+    const audio = document.getElementById("audio");
+    const playBtn = document.getElementById("play");
+    const prevBtn = document.getElementById("prev");
+    const nextBtn = document.getElementById("next");
+    const title = document.getElementById("title");
+    const artist = document.getElementById("artist");
+    const cover = document.getElementById("cover");
+    const progress = document.getElementById("progress");
+    const volume = document.getElementById("volume");
 
-// Loader
-window.onload=()=>{
-  setTimeout(()=>{
-    document.getElementById('loader').style.display="none"; 
-    profileModal.style.display="flex";
-  },2000);
-}
+    function loadSong(i){
+      audio.src = songs[i].src;
+      title.textContent = songs[i].title;
+      artist.textContent = songs[i].artist;
+      cover.src = songs[i].cover;
+    }
+    loadSong(index);
 
-// PROFILE
-emojiButtons.forEach(btn=>{
-  btn.addEventListener("click",()=>{
-    emojiButtons.forEach(b=>b.style.border="none");
-    btn.style.border="2px solid #00ffcc";
-    userEmoji=btn.innerText;
-  });
-});
+    playBtn.addEventListener("click", () => {
+      if(audio.paused){
+        audio.play();
+        playBtn.textContent = "⏸";
+      } else {
+        audio.pause();
+        playBtn.textContent = "▶️";
+      }
+    });
 
-profileConfirmBtn.addEventListener("click",()=>{
-  let val=profileInput.value.trim();
-  if(val) userName=val;
-  document.getElementById("userName").innerText=`${userEmoji} ${userName}`;
-  profileModal.style.display="none";
-  document.querySelector('.chat-container').style.display="flex";
-  botMsg("Salom! Men Ferkaveka AI yordamchiman. Quyidagilardan birini tanlang:");
-  showMainBtns();
-  spawnParticles();
-});
+    nextBtn.addEventListener("click", () => {
+      index = (index + 1) % songs.length;
+      loadSong(index);
+      audio.play();
+      playBtn.textContent = "⏸";
+    });
 
-// ===== SPEECH TOGGLE =====
-speechToggle.addEventListener("click", () => {
-  speechEnabled = !speechEnabled;
-  speechToggle.innerText = speechEnabled ? "🔊 O‘qish" : "🔇 O‘qimaslik";
-});
+    prevBtn.addEventListener("click", () => {
+      index = (index - 1 + songs.length) % songs.length;
+      loadSong(index);
+      audio.play();
+      playBtn.textContent = "⏸";
+    });
 
-// ===== MESSAGES =====
-function botMsg(text, btns=false, voice=false, multi=false){
-  stats.messages++;
-  stats.lastActive=new Date();
-  let div=document.createElement("div");
-  div.className="msg bot";
-  if(multi) div.innerHTML=text; else div.innerHTML=text.replace(/\n/g,"<br>");
-  let timeSpan=document.createElement("span");
-  timeSpan.className="time";
-  let d=new Date(); timeSpan.innerText=`${d.getHours()}:${("0"+d.getMinutes()).slice(-2)}`;
-  div.appendChild(timeSpan);
-  chatBox.appendChild(div);
-  if(btns) chatBox.appendChild(btns);
-  chatBox.scrollTop=chatBox.scrollHeight;
-  
-  // Ovoz bilan o‘qish
-  if(voice && speechEnabled && 'speechSynthesis' in window){
-    let msg=new SpeechSynthesisUtterance(text.replace(/<[^>]*>/g,''));
-    msg.lang='uz-UZ';
-    window.speechSynthesis.speak(msg);
-  }
-}
+    audio.addEventListener("timeupdate", () => {
+      progress.value = (audio.currentTime / audio.duration) * 100;
+    });
 
-function userMsg(text){
-  stats.messages++;
-  stats.lastActive=new Date();
-  let div=document.createElement("div");
-  div.className="msg user";
-  div.innerHTML=`${text} <span class="time">${new Date().getHours()}:${("0"+new Date().getMinutes()).slice(-2)}</span>`;
-  chatBox.appendChild(div);
-  chatBox.scrollTop=chatBox.scrollHeight;
-}
+    progress.addEventListener("input", () => {
+      audio.currentTime = (progress.value / 100) * audio.duration;
+    });
 
-// SEND
-function sendMsg(){
-  let val=document.getElementById("userInput").value.trim();
-  if(!val) return;
-  userMsg(val);
-  document.getElementById("userInput").value="";
-  setTimeout(()=>{
-    let reply="Kechirasiz, men hali faqat tugmalar orqali ishlayman, lekin tez orada AI javob qo‘shiladi!";
-    botMsg(reply,true,true);
-  },700);
-}
+    volume.addEventListener("input", () => {
+      audio.volume = volume.value;
+    });
 
-// ===== BUTTONS =====
-function showMainBtns(){
-  let btns=document.createElement("div"); btns.className="btns";
-  btns.innerHTML=`
-    <button onclick="contact()">📞 Aloqaga chiqmoqchiman</button>
-    <button onclick="about()">ℹ️ Ferkaveka kim?</button>
-    <button onclick="problem()">⚠️ Saytda muammo bor</button>
-    <button onclick="service()">🛠 Xizmatlar</button>
-    <button onclick="fun()">🎮 Qiziqarli faktlar</button>
-    <button onclick="moreBtns()">➕ Yana</button>
-  `;
-  botMsg("Quyidagilardan birini tanlang:", btns, true);
-}
-
-// FUNKSIYALAR
-function back(){ showMainBtns(); stats.buttonsClicked++; }
-function makeBackBtn(){
-  let div=document.createElement("div");
-  div.className="btns";
-  div.innerHTML=`<button onclick="back()">⬅️ Orqaga</button>`;
-  return div;
-}
-function contact(){ stats.buttonsClicked++;
-  botMsg(`Telegram: <b>@shohcore</b><br>Instagram: <b>@shohbekcore</b><br>Tel: <b>+998 90 104 13 34</b>`,makeBackBtn(),true);
-}
-function about(){ stats.buttonsClicked++;
-  botMsg(`Ferkaveka — kreativ loyiha bo'lib, foydalanuvchilarga innovatsion yechimlar va o'yinlar taqdim etadi.`,makeBackBtn(),true);
-}
-function problem(){ stats.buttonsClicked++;
-  botMsg(`Saytdan foydalanish uchun: menyudan kerakli bo‘limni tanlang. Muammo bo‘lsa “Aloqa” bo‘limidan foydalaning.`,makeBackBtn(),true);
-}
-function service(){ stats.buttonsClicked++;
-  botMsg(`Bizning xizmatlar: <br>- Web saytlar <br>- 3D o'yinlar <br>- Mobil ilovalar`,makeBackBtn(),true);
-}
-function fun(){ stats.buttonsClicked++;
-  botMsg(`Qiziqarli fakt: Ferkaveka nomi juda noyob va kreativ tarzda o‘ylab topilgan! <br><img src="https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif" width="150">`,makeBackBtn(),true,true);
-}
-function moreBtns(){ stats.buttonsClicked++;
-  let btns=document.createElement("div"); btns.className="btns";
-  btns.innerHTML=`
-    <button onclick="botMsg('📰 Yangiliklar bo‘limi ishlab chiqilmoqda...',makeBackBtn(),true)">📰 Yangiliklar</button>
-    <button onclick="botMsg('📚 Qo‘llanmalar tez orada!',makeBackBtn(),true)">📚 Qo‘llanmalar</button>
-    <button onclick="botMsg('💡 Innovatsion g‘oyalar Ferkaveka bilan!',makeBackBtn(),true)">💡 Innovatsiyalar</button>
-    <button onclick="botMsg('⚙️ Sozlamalar hali qo‘shilmagan!',makeBackBtn(),true)">⚙️ Sozlamalar</button>
-    <button onclick="botMsg('👨‍💻 Bizning jamoamiz haqida tez orada!',makeBackBtn(),true)">👨‍💻 Jamoa</button>
-  `;
-  botMsg("Yana tugmalar:",btns,true);
-}
-
-// PARTICLES
-function spawnParticles(){
-  for(let i=0;i<30;i++){
-    let p=document.createElement("div");
-    p.className="particle";
-    let size=Math.random()*8+4;
-    p.style.width=p.style.height=size+"px";
-    p.style.left=Math.random()*100+"vw";
-    p.style.background=`rgba(${Math.floor(Math.random()*255)},${Math.floor(Math.random()*255)},${Math.floor(Math.random()*255)},0.5)`;
-    p.style.animationDuration=(Math.random()*10+5)+"s";
-    document.body.appendChild(p);
-  }
-}
-
-// MOBILE SWIPE
-let touchStartY=0;
-document.addEventListener('touchstart',(e)=>{touchStartY=e.changedTouches[0].screenY;});
-document.addEventListener('touchend',(e)=>{
-  let touchEndY=e.changedTouches[0].screenY;
-  if(touchStartY - touchEndY > 50){
-    chatBox.scrollTop+=50;
-  } else if(touchEndY - touchStartY > 50){
-    chatBox.scrollTop-=50;
-  }
-});
-</script>
+    audio.addEventListener("ended", () => {
+      index = (index + 1) % songs.length;
+      loadSong(index);
+      audio.play();
+    });
+  </script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ferkaveka AI Chat</title>
+<title>Ferkaveka AI Chat Pro</title>
 <style>
 /* ===== GLOBAL ===== */
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
@@ -78,6 +78,7 @@ body{background:linear-gradient(270deg,#0f0c29,#302b63,#24243e);background-size:
   <div id="profileBar">
     <img id="userAvatar" src="https://via.placeholder.com/40" alt="Profil">
     <span id="userName">Foydalanuvchi</span>
+    <button id="speechToggle" style="margin-left:auto;padding:5px 10px;border:none;border-radius:8px;background:#00ffcc;color:#000;cursor:pointer;">🔊 O‘qish</button>
   </div>
   <div class="chat-box" id="chatBox"></div>
   <div class="input-area">
@@ -87,7 +88,6 @@ body{background:linear-gradient(270deg,#0f0c29,#302b63,#24243e);background-size:
 </div>
 
 <script>
-// ===== INIT =====
 let stats={messages:0,buttonsClicked:0,lastActive:new Date()};
 let chatBox=document.getElementById("chatBox");
 let userName="Foydalanuvchi";
@@ -96,12 +96,18 @@ let profileModal=document.getElementById("profileModal");
 let profileInput=document.getElementById("profileNameInput");
 let profileConfirmBtn=document.getElementById("profileConfirmBtn");
 let emojiButtons=document.querySelectorAll(".emojiBtn");
+let speechEnabled=true;
+let speechToggle=document.getElementById("speechToggle");
 
+// Loader
 window.onload=()=>{
-  setTimeout(()=>{document.getElementById('loader').style.display="none"; profileModal.style.display="flex";},2000);
+  setTimeout(()=>{
+    document.getElementById('loader').style.display="none"; 
+    profileModal.style.display="flex";
+  },2000);
 }
 
-// ===== PROFILE =====
+// PROFILE
 emojiButtons.forEach(btn=>{
   btn.addEventListener("click",()=>{
     emojiButtons.forEach(b=>b.style.border="none");
@@ -121,8 +127,14 @@ profileConfirmBtn.addEventListener("click",()=>{
   spawnParticles();
 });
 
+// ===== SPEECH TOGGLE =====
+speechToggle.addEventListener("click", () => {
+  speechEnabled = !speechEnabled;
+  speechToggle.innerText = speechEnabled ? "🔊 O‘qish" : "🔇 O‘qimaslik";
+});
+
 // ===== MESSAGES =====
-function botMsg(text,btns=false,voice=false,multi=false){
+function botMsg(text, btns=false, voice=false, multi=false){
   stats.messages++;
   stats.lastActive=new Date();
   let div=document.createElement("div");
@@ -135,11 +147,15 @@ function botMsg(text,btns=false,voice=false,multi=false){
   chatBox.appendChild(div);
   if(btns) chatBox.appendChild(btns);
   chatBox.scrollTop=chatBox.scrollHeight;
-  if(voice && 'speechSynthesis' in window){
+  
+  // Ovoz bilan o‘qish
+  if(voice && speechEnabled && 'speechSynthesis' in window){
     let msg=new SpeechSynthesisUtterance(text.replace(/<[^>]*>/g,''));
-    msg.lang='uz-UZ';window.speechSynthesis.speak(msg);
+    msg.lang='uz-UZ';
+    window.speechSynthesis.speak(msg);
   }
 }
+
 function userMsg(text){
   stats.messages++;
   stats.lastActive=new Date();
@@ -150,7 +166,7 @@ function userMsg(text){
   chatBox.scrollTop=chatBox.scrollHeight;
 }
 
-// ===== SEND =====
+// SEND
 function sendMsg(){
   let val=document.getElementById("userInput").value.trim();
   if(!val) return;
@@ -176,7 +192,7 @@ function showMainBtns(){
   botMsg("Quyidagilardan birini tanlang:", btns, true);
 }
 
-// ===== FUNKSIYALAR =====
+// FUNKSIYALAR
 function back(){ showMainBtns(); stats.buttonsClicked++; }
 function makeBackBtn(){
   let div=document.createElement("div");
@@ -211,7 +227,7 @@ function moreBtns(){ stats.buttonsClicked++;
   botMsg("Yana tugmalar:",btns,true);
 }
 
-// ===== PARTICLES =====
+// PARTICLES
 function spawnParticles(){
   for(let i=0;i<30;i++){
     let p=document.createElement("div");
@@ -225,7 +241,7 @@ function spawnParticles(){
   }
 }
 
-// ===== MOBILE SWIPE =====
+// MOBILE SWIPE
 let touchStartY=0;
 document.addEventListener('touchstart',(e)=>{touchStartY=e.changedTouches[0].screenY;});
 document.addEventListener('touchend',(e)=>{
