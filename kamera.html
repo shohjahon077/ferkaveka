@@ -1,224 +1,184 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uz">
 <head>
-  <meta charset="UTF-8">
-  <title>Ferkaveka Camera Pro Max</title>
-  <style>
-    body {
-      background: black;
-      color: white;
-      margin: 0;
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      overflow: hidden;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ferkalauncher</title>
+<style>
+/* ===== Body va container ===== */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #1e1e2f, #2c2c3c);
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  padding-top: 20px;
+}
 
-    .camera-container {
-      position: relative;
-      width: 100%;
-      max-width: 900px;
-      aspect-ratio: 16/9;
-      border-radius: 20px;
-      overflow: hidden;
-      background: #000;
-      box-shadow: 0 0 40px rgba(0, 255, 200, 0.6);
-    }
+.container {
+  text-align: center;
+  width: 95%;
+  max-width: 500px;
+  background: rgba(44,44,60,0.9);
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
 
-    video, canvas {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+/* ===== Sarlavha ===== */
+h1 {
+  font-size: 2em;
+  margin-bottom: 20px;
+  color: #ff6a00;
+  text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+}
 
-    .watermark {
-      position: absolute;
-      bottom: 10px;
-      right: 10px;
-      font-size: 20px;
-      font-weight: bold;
-      color: rgba(255, 255, 255, 0.8);
-      text-shadow: 0 0 5px black;
-    }
+/* ===== Tugmalar ===== */
+.btn {
+  display: inline-block;
+  padding: 12px 25px;
+  background: linear-gradient(45deg, #ff6a00, #ff4500);
+  color: #fff;
+  border-radius: 12px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: all 0.3s ease;
+  font-weight: bold;
+  font-size: 1em;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
 
-    .controls {
-      margin-top: 15px;
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+}
 
-    button, select {
-      background: rgba(255,255,255,0.1);
-      border: 2px solid #00ffcc;
-      color: white;
-      padding: 12px 18px;
-      border-radius: 50px;
-      cursor: pointer;
-      font-size: 16px;
-      font-weight: bold;
-      transition: 0.3s;
-    }
+/* ===== File ro'yxati ===== */
+.file-list {
+  text-align: left;
+  max-height: 400px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+}
 
-    button:hover, select:hover {
-      background: #00ffcc;
-      color: black;
-      transform: scale(1.1);
-    }
+.file-item {
+  background: #3a3a4a;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+}
 
-    #stopBtn {
-      display: none;
-      background: red;
-      border-color: red;
-      animation: pulse 1s infinite;
-    }
+.file-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
-    @keyframes pulse {
-      0% { box-shadow: 0 0 5px red; }
-      50% { box-shadow: 0 0 20px red; }
-      100% { box-shadow: 0 0 5px red; }
-    }
+.file-item button {
+  padding: 6px 12px;
+  background: #ff4500;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #fff;
+  font-weight: bold;
+  transition: background 0.3s ease;
+}
 
-    #flash {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: white;
-      opacity: 0;
-      pointer-events: none;
-    }
+.file-item button:hover {
+  background: #ff6a00;
+}
 
-    @keyframes flashAnim {
-      0% { opacity: 1; }
-      100% { opacity: 0; }
-    }
-  </style>
+video, audio, img {
+  margin-top: 10px;
+  width: 100%;
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+}
+
+/* ===== Mobile responsive ===== */
+@media (max-width: 500px) {
+  h1 {
+    font-size: 1.6em;
+  }
+  .btn {
+    width: 90%;
+  }
+}
+</style>
 </head>
 <body>
-  <div class="camera-container">
-    <video id="camera" autoplay playsinline></video>
-    <canvas id="snapshot" style="display:none;"></canvas>
-    <div class="watermark">FERKAVEKA</div>
-    <div id="flash"></div>
+<div class="container">
+  <h1>Ferkalauncher</h1>
+  <div class="file-selector">
+    <label for="fileInput" class="btn">Fayllarni tanlash</label>
+    <input type="file" id="fileInput" multiple style="display:none">
   </div>
+  <div id="fileList" class="file-list"></div>
+</div>
 
-  <div class="controls">
-    <select id="resolution">
-      <option value="256x144">144p</option>
-      <option value="426x240">240p</option>
-      <option value="640x360">360p</option>
-      <option value="854x480">480p</option>
-      <option value="1280x720">720p</option>
-      <option value="1920x1080">1080p</option>
-      <option value="3840x2160">4K</option>
-      <option value="7680x4320">8K</option>
-    </select>
-    <select id="filter">
-      <option value="none">Normal</option>
-      <option value="grayscale(100%)">Grayscale</option>
-      <option value="sepia(100%)">Sepia</option>
-      <option value="invert(100%)">Invert</option>
-      <option value="blur(3px)">Blur</option>
-      <option value="contrast(200%)">Contrast</option>
-      <option value="brightness(150%)">Bright</option>
-    </select>
-    <button onclick="switchCamera()">🔄 Kamera</button>
-    <button onclick="takePhoto()">📸 Surat</button>
-    <button id="recordBtn" onclick="startRecording()">🔴 Video</button>
-    <button id="stopBtn" onclick="stopRecording()">⏹ Stop</button>
-  </div>
+<script>
+const fileInput = document.getElementById('fileInput');
+const fileList = document.getElementById('fileList');
 
-  <script>
-    const video = document.getElementById("camera");
-    const snapshot = document.getElementById("snapshot");
-    const ctx = snapshot.getContext("2d");
-    const resolutionSelect = document.getElementById("resolution");
-    const filterSelect = document.getElementById("filter");
-    const flash = document.getElementById("flash");
+fileInput.addEventListener('change', () => {
+  fileList.innerHTML = '';
 
-    let mediaRecorder, recordedChunks = [];
-    let usingFront = true; // boshlang‘ich: old kamera
+  const files = Array.from(fileInput.files);
+  files.forEach((file) => {
+    const fileItem = document.createElement('div');
+    fileItem.className = 'file-item';
+    
+    const fileHeader = document.createElement('div');
+    fileHeader.className = 'file-header';
 
-    async function startCamera(width=1280, height=720, facingMode="user") {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { width: { ideal: width }, height: { ideal: height }, facingMode },
-          audio: true
-        });
-        video.srcObject = stream;
-        return stream;
-      } catch (err) {
-        alert("Kameraga ulanishda xato: " + err);
+    const fileName = document.createElement('span');
+    fileName.textContent = file.name;
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = 'O‘chirish';
+    deleteBtn.addEventListener('click', () => {
+      if(confirm(`Siz ${file.name} faylini o‘chirmoqchimisiz?`)) {
+        fileItem.remove();
+        alert(`${file.name} o‘chirildi (brauzer memoryda).`);
       }
-    }
-
-    function takePhoto() {
-      snapshot.width = video.videoWidth;
-      snapshot.height = video.videoHeight;
-      ctx.drawImage(video, 0, 0);
-      ctx.fillStyle = "rgba(255,255,255,0.8)";
-      ctx.font = "30px Arial";
-      ctx.fillText("FERKAVEKA", 20, snapshot.height - 20);
-
-      // Flash animatsiya
-      flash.style.animation = "flashAnim 0.3s";
-      setTimeout(() => flash.style.animation = "", 300);
-
-      const link = document.createElement("a");
-      link.download = "ferkaveka_photo.png";
-      link.href = snapshot.toDataURL("image/png");
-      link.click();
-    }
-
-    async function startRecording() {
-      const stream = video.srcObject;
-      recordedChunks = [];
-      mediaRecorder = new MediaRecorder(stream, { mimeType: "video/webm; codecs=vp9" });
-      mediaRecorder.ondataavailable = e => {
-        if (e.data.size > 0) recordedChunks.push(e.data);
-      };
-      mediaRecorder.onstop = saveVideo;
-      mediaRecorder.start();
-      document.getElementById("recordBtn").style.display = "none";
-      document.getElementById("stopBtn").style.display = "inline-block";
-    }
-
-    function stopRecording() {
-      mediaRecorder.stop();
-      document.getElementById("recordBtn").style.display = "inline-block";
-      document.getElementById("stopBtn").style.display = "none";
-    }
-
-    function saveVideo() {
-      const blob = new Blob(recordedChunks, { type: "video/webm" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "ferkaveka_video.webm";
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    resolutionSelect.addEventListener("change", () => {
-      const [w,h] = resolutionSelect.value.split("x").map(Number);
-      startCamera(w,h, usingFront ? "user" : "environment");
     });
 
-    filterSelect.addEventListener("change", () => {
-      video.style.filter = filterSelect.value;
-    });
+    fileHeader.appendChild(fileName);
+    fileHeader.appendChild(deleteBtn);
+    fileItem.appendChild(fileHeader);
 
-    function switchCamera() {
-      usingFront = !usingFront;
-      const [w,h] = resolutionSelect.value.split("x").map(Number);
-      startCamera(w,h, usingFront ? "user" : "environment");
+    // Media ko'rsatish
+    if(file.type.startsWith('image/')) {
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(file);
+      img.alt = file.name;
+      fileItem.appendChild(img);
     }
 
-    startCamera();
-  </script>
+    if(file.type.startsWith('video/')) {
+      const video = document.createElement('video');
+      video.src = URL.createObjectURL(file);
+      video.controls = true;
+      fileItem.appendChild(video);
+    }
+
+    if(file.type.startsWith('audio/')) {
+      const audio = document.createElement('audio');
+      audio.src = URL.createObjectURL(file);
+      audio.controls = true;
+      fileItem.appendChild(audio);
+    }
+
+    fileList.appendChild(fileItem);
+  });
+});
+</script>
 </body>
 </html>
