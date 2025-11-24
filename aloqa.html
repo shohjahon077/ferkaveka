@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🌌 Kontakt Kemasi</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #000;
+      overflow: hidden;
+      font-family: 'Arial', sans-serif;
+    }
+
+    #scene {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    #instructions {
+      position: absolute;
+      bottom: 20px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      color: rgba(180, 220, 255, 0.6);
+      font-size: 14px;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    @media (max-width: 600px) {
+      #instructions {
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="scene"></div>
+  <div id="instructions">Dvigatellarga bosing yoki kamerani boshqaring (sichqoncha/touch)</div>
+
+  <!-- Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r132/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.132.0/examples/js/controls/OrbitControls.min.js"></script>
+
+  <script>
+    // --- Sahna ---
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x000210);
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 3000);
+    camera.position.set(0, 0, 80);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    document.getElementById('scene').appendChild(renderer.domElement);
+
+    // --- Yulduzlar ---
+    const starGeo = new THREE.BufferGeometry();
+    const starCount = 12000;
+    const pos = new Float32Array(starCount * 3);
+    for (let i = 0; i < starCount * 3; i++) pos[i] = (Math.random() - 0.5) * 4000;
+    starGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 1.1 });
+    scene.add(new THREE.Points(starGeo, starMat));
+
+    // --- Kema tanasi ---
+    const shipBodyGeo = new THREE.ConeGeometry(10, 40, 8);
+    const shipBodyMat = new THREE.MeshPhongMaterial({ color: 0x2255ff, shininess: 90 });
+    const shipBody = new THREE.Mesh(shipBodyGeo, shipBodyMat);
+    shipBody.rotation.x = Math.PI;
+    scene.add(shipBody);
+
+    // --- Dvigatellar (3 ta) ---
+    const engines = [];
+    const engineData = [
+      { color: 0x00ff88, name: 'tel', link: 'tel:+998901234567', pos: [-12, -25, 0] },      // Telefon (yashil)
+      { color: 0x0088ff, name: 'tg', link: 'https://t.me/yourusername', pos: [0, -28, 0] },  // Telegram (ko'k)
+      { color: 0xff4488, name: 'ig', link: 'https://instagram.com/yourusername', pos: [12, -25, 0] } // Instagram (pushti)
+    ];
+
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+
+    engineData.forEach(data => {
+      const geo = new THREE.CylinderGeometry(2, 3, 10, 16);
+      const mat = new THREE.MeshPhongMaterial({ color: data.color });
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.position.set(...data.pos);
+      mesh.userData = { type: data.name, url: data.link };
+      scene.add(mesh);
+      engines.push(mesh);
+
+      // Yorug'lik effekti
+      const light = new THREE.PointLight(data.color, 1, 30);
+      light.position.copy(mesh.position);
+      light.position.y -= 8;
+      scene.add(light);
+    });
+
+    // --- Yorug'liklar ---
+    const ambient = new THREE.AmbientLight(0x112244);
+    scene.add(ambient);
+
+    const dirLight = new THREE.DirectionalLight(0x66aaff, 1);
+    dirLight.position.set(100, 100, 50);
+    scene.add(dirLight);
+
+    // --- OrbitControls ---
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.07;
+    controls.minDistance = 40;
+    controls.maxDistance = 150;
+
+    // --- Click event (dvigatel tanlash) ---
+    const handleClick = (event) => {
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(engines);
+
+      if (intersects.length > 0) {
+        const obj = intersects[0].object;
+        if (obj.userData && obj.userData.url) {
+          // Efekt: qisqa yorqinlik
+          const originalColor = obj.material.color.getHex();
+          obj.material.color.set(0xffffff);
+          setTimeout(() => obj.material.color.set(originalColor), 200);
+
+          // Linkni ochish
+          if (obj.userData.url.startsWith('tel:')) {
+            window.location.href = obj.userData.url;
+          } else {
+            window.open(obj.userData.url, '_blank');
+          }
+        }
+      }
+    };
+
+    window.addEventListener('click', handleClick);
+    window.addEventListener('touchend', (e) => {
+      if (e.touches.length === 0) handleClick(e);
+    });
+
+    // --- Animatsiya ---
+    const animate = () => {
+      requestAnimationFrame(animate);
+
+      // Kema sekin aylanadi
+      shipBody.rotation.y += 0.001;
+
+      // Dvigatellar tebranadi
+      engines.forEach((eng, i) => {
+        const offset = Math.sin(Date.now() * 0.002 + i) * 0.3;
+        eng.position.y = engineData[i].pos[1] + offset;
+      });
+
+      controls.update();
+      renderer.render(scene, camera);
+    };
+    animate();
+
+    // --- Resize ---
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>
