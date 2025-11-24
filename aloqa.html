@@ -1,182 +1,192 @@
 <!DOCTYPE html>
 <html lang="uz">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🌌 Kontakt Kemasi</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Aloqa Bo'limi (Kosmik)</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
-    body {
-      background: #000;
-      overflow: hidden;
-      font-family: 'Arial', sans-serif;
-    }
-
-    #scene {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-    }
-
-    #instructions {
-      position: absolute;
-      bottom: 20px;
-      left: 0;
-      right: 0;
-      text-align: center;
-      color: rgba(180, 220, 255, 0.6);
-      font-size: 14px;
-      pointer-events: none;
-      z-index: 10;
-    }
-
-    @media (max-width: 600px) {
-      #instructions {
-        font-size: 12px;
-      }
-    }
-  </style>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+            color: #fff;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        canvas {
+            display: block;
+        }
+        #loading {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.8s ease-out;
+        }
+        #loading-text {
+            font-size: 2.5em;
+            color: #00ffff;
+            text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
+            animation: pulse 2s infinite alternate;
+        }
+        @keyframes pulse {
+            from { opacity: 0.6; }
+            to { opacity: 1; text-shadow: 0 0 15px #00ffff, 0 0 30px #00ffff; }
+        }
+    </style>
 </head>
 <body>
-  <div id="scene"></div>
-  <div id="instructions">Dvigatellarga bosing yoki kamerani boshqaring (sichqoncha/touch)</div>
+    <div id="loading">
+        <div id="loading-text">🌌 Aloqa Yuklanmoqda...</div>
+    </div>
 
-  <!-- Three.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r132/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.132.0/examples/js/controls/OrbitControls.min.js"></script>
+    <script>
+        // Scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
 
-  <script>
-    // --- Sahna ---
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x000210);
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 3000);
-    camera.position.set(0, 0, 80);
+        // OrbitControls
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.03;
+        controls.maxDistance = 25;
+        controls.minDistance = 3;
+        camera.position.set(0, 0, 10);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    document.getElementById('scene').appendChild(renderer.domElement);
+        // Ambient + directional lights
+        scene.add(new THREE.AmbientLight(0x222233, 0.4));
+        const dirLight = new THREE.DirectionalLight(0x00ffff, 0.8);
+        dirLight.position.set(5, 5, 5);
+        scene.add(dirLight);
 
-    // --- Yulduzlar ---
-    const starGeo = new THREE.BufferGeometry();
-    const starCount = 12000;
-    const pos = new Float32Array(starCount * 3);
-    for (let i = 0; i < starCount * 3; i++) pos[i] = (Math.random() - 0.5) * 4000;
-    starGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 1.1 });
-    scene.add(new THREE.Points(starGeo, starMat));
+        // Floating particles (slow-moving stars)
+        const particles = (() => {
+            const geometry = new THREE.BufferGeometry();
+            const count = 2000;
+            const pos = new Float32Array(count * 3);
+            for (let i = 0; i < count * 3; i++) {
+                pos[i] = (Math.random() - 0.5) * 2000;
+            }
+            geometry.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+            const material = new THREE.PointsMaterial({
+                color: 0xffffff,
+                size: 1.2,
+                transparent: true,
+                opacity: 0.8
+            });
+            return new THREE.Points(geometry, material);
+        })();
+        scene.add(particles);
 
-    // --- Kema tanasi ---
-    const shipBodyGeo = new THREE.ConeGeometry(10, 40, 8);
-    const shipBodyMat = new THREE.MeshPhongMaterial({ color: 0x2255ff, shininess: 90 });
-    const shipBody = new THREE.Mesh(shipBodyGeo, shipBodyMat);
-    shipBody.rotation.x = Math.PI;
-    scene.add(shipBody);
+        // Create contact panel
+        function createContactTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1024;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
 
-    // --- Dvigatellar (3 ta) ---
-    const engines = [];
-    const engineData = [
-      { color: 0x00ff88, name: 'tel', link: 'tel:+998901234567', pos: [-12, -25, 0] },      // Telefon (yashil)
-      { color: 0x0088ff, name: 'tg', link: 'https://t.me/yourusername', pos: [0, -28, 0] },  // Telegram (ko'k)
-      { color: 0xff4488, name: 'ig', link: 'https://instagram.com/yourusername', pos: [12, -25, 0] } // Instagram (pushti)
-    ];
+            // Semi-transparent dark background
+            ctx.fillStyle = 'rgba(0, 0, 10, 0.6)';
+            ctx.fillRect(0, 0, 1024, 512);
 
-    const raycaster = new THREE.Raycaster();
-    const mouse = new THREE.Vector2();
+            // Title
+            ctx.font = 'bold 100px "Segoe UI", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#00ffff';
+            ctx.shadowColor = '#00ffff';
+            ctx.shadowBlur = 20;
+            ctx.fillText('ALOQA', 512, 120);
 
-    engineData.forEach(data => {
-      const geo = new THREE.CylinderGeometry(2, 3, 10, 16);
-      const mat = new THREE.MeshPhongMaterial({ color: data.color });
-      const mesh = new THREE.Mesh(geo, mat);
-      mesh.position.set(...data.pos);
-      mesh.userData = { type: data.name, url: data.link };
-      scene.add(mesh);
-      engines.push(mesh);
+            // Reset shadow for details
+            ctx.shadowBlur = 0;
 
-      // Yorug'lik effekti
-      const light = new THREE.PointLight(data.color, 1, 30);
-      light.position.copy(mesh.position);
-      light.position.y -= 8;
-      scene.add(light);
-    });
+            // Contacts
+            ctx.font = 'bold 60px "Segoe UI", sans-serif';
+            ctx.fillStyle = '#ff00ff';
+            ctx.fillText('📸 @ferkaveka', 512, 230);
 
-    // --- Yorug'liklar ---
-    const ambient = new THREE.AmbientLight(0x112244);
-    scene.add(ambient);
+            ctx.fillStyle = '#00ffff';
+            ctx.fillText('💬 @FerkaVeka', 512, 330);
 
-    const dirLight = new THREE.DirectionalLight(0x66aaff, 1);
-    dirLight.position.set(100, 100, 50);
-    scene.add(dirLight);
+            ctx.fillStyle = '#00ff00';
+            ctx.fillText('📞 +998 91 703 13 34', 512, 430);
 
-    // --- OrbitControls ---
-    const controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.07;
-    controls.minDistance = 40;
-    controls.maxDistance = 150;
-
-    // --- Click event (dvigatel tanlash) ---
-    const handleClick = (event) => {
-      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-      raycaster.setFromCamera(mouse, camera);
-      const intersects = raycaster.intersectObjects(engines);
-
-      if (intersects.length > 0) {
-        const obj = intersects[0].object;
-        if (obj.userData && obj.userData.url) {
-          // Efekt: qisqa yorqinlik
-          const originalColor = obj.material.color.getHex();
-          obj.material.color.set(0xffffff);
-          setTimeout(() => obj.material.color.set(originalColor), 200);
-
-          // Linkni ochish
-          if (obj.userData.url.startsWith('tel:')) {
-            window.location.href = obj.userData.url;
-          } else {
-            window.open(obj.userData.url, '_blank');
-          }
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.generateMipmaps = false;
+            texture.minFilter = THREE.LinearFilter;
+            return texture;
         }
-      }
-    };
 
-    window.addEventListener('click', handleClick);
-    window.addEventListener('touchend', (e) => {
-      if (e.touches.length === 0) handleClick(e);
-    });
+        const contactTexture = createContactTexture();
+        const contactMaterial = new THREE.MeshBasicMaterial({
+            map: contactTexture,
+            transparent: true,
+            opacity: 0.92,
+            side: THREE.DoubleSide
+        });
 
-    // --- Animatsiya ---
-    const animate = () => {
-      requestAnimationFrame(animate);
+        const panel = new THREE.Mesh(
+            new THREE.PlaneGeometry(10, 5),
+            contactMaterial
+        );
+        panel.position.z = 0;
+        scene.add(panel);
 
-      // Kema sekin aylanadi
-      shipBody.rotation.y += 0.001;
+        // Add glowing edges (optional: wireframe for hologram feel)
+        const edgeGeo = new THREE.EdgesGeometry(new THREE.PlaneGeometry(10.2, 5.2), 10);
+        const edgeMat = new THREE.LineBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.6 });
+        const edges = new THREE.LineSegments(edgeGeo, edgeMat);
+        scene.add(edges);
 
-      // Dvigatellar tebranadi
-      engines.forEach((eng, i) => {
-        const offset = Math.sin(Date.now() * 0.002 + i) * 0.3;
-        eng.position.y = engineData[i].pos[1] + offset;
-      });
+        // Animation loop
+        const clock = new THREE.Clock();
+        function animate() {
+            requestAnimationFrame(animate);
 
-      controls.update();
-      renderer.render(scene, camera);
-    };
-    animate();
+            const time = clock.getElapsedTime();
 
-    // --- Resize ---
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-  </script>
+            // Slow floating effect
+            panel.position.y = Math.sin(time * 0.3) * 0.2;
+            panel.rotation.y = Math.sin(time * 0.2) * 0.05;
+
+            // Rotate particles slowly
+            particles.rotation.y += 0.0002;
+
+            // Sync edge geometry
+            edges.position.copy(panel.position);
+            edges.rotation.copy(panel.rotation);
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Hide loading
+        setTimeout(() => {
+            const loader = document.getElementById('loading');
+            loader.style.opacity = '0';
+            setTimeout(() => loader.remove(), 800);
+        }, 1200);
+
+        // Responsive
+        window.addEventListener('resize', () => {
+            const w = window.innerWidth, h = window.innerHeight;
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+            renderer.setSize(w, h);
+        });
+    </script>
 </body>
 </html>
+
+
