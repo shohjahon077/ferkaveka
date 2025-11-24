@@ -1,257 +1,314 @@
 <!DOCTYPE html>
 <html lang="uz">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ferkaveka AI Chat Pro</title>
-<style>
-/* ===== GLOBAL ===== */
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
-body,html{width:100%;height:100%;overflow:hidden;display:flex;justify-content:center;align-items:center;background:#111;transition:background 1s;}
-body{background:linear-gradient(270deg,#0f0c29,#302b63,#24243e);background-size:600% 600%;animation:bgAnim 20s ease infinite;}
-@keyframes bgAnim{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%;}}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ferkaveka AI - 3D Smartfon Chat Stansiyasi (Uzoq Animatsiya)</title>
 
-/* ===== LOADER ===== */
-#loader{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);display:flex;flex-direction:column;justify-content:center;align-items:center;color:#fff;font-size:1.2rem;z-index:9999;}
-.spinner{border:6px solid rgba(255,255,255,0.2);border-top:6px solid #00ffcc;border-radius:50%;width:60px;height:60px;margin-bottom:20px;animation:spin 1s linear infinite;}
-@keyframes spin{100%{transform:rotate(360deg)}}
+    <script async src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+      }
+    }
+    </script>
+    
+    <style>
+        /* ===== GLOBAL & ANIMATION CSS ===== */
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
+        body,html{width:100%;height:100%;overflow:hidden;background:#000;}
 
-/* ===== CHAT CONTAINER ===== */
-.chat-container{display:none;width:95%;max-width:480px;height:90vh;background:rgba(255,255,255,0.08);backdrop-filter:blur(12px);border-radius:20px;box-shadow:0 0 25px rgba(0,0,0,0.4);display:flex;flex-direction:column;position:relative;overflow:hidden;}
-#profileBar{display:flex;align-items:center;gap:10px;padding:10px;background:rgba(0,0,0,0.3);border-bottom:1px solid rgba(255,255,255,0.1);}
-#profileBar img{width:40px;height:40px;border-radius:50%;border:2px solid #00ffcc;}
-#profileBar span{color:#fff;font-weight:bold;font-size:1rem;}
-.chat-box{flex:1;padding:10px;overflow-y:auto;color:#fff;display:flex;flex-direction:column;gap:10px;}
-.msg{max-width:80%;padding:10px 14px;border-radius:12px;line-height:1.4em;animation:fadeIn 0.4s ease;position:relative;}
-.bot{background:rgba(0,255,204,0.2);border-left:4px solid #00ffcc;align-self:flex-start;}
-.user{background:rgba(255,255,255,0.15);border-right:4px solid #ff9900;align-self:flex-end;}
-.msg span.time{position:absolute;bottom:-18px;right:10px;font-size:10px;color:#ccc;}
-@keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+        /* Rendererlar va Z-index */
+        #webgl-renderer { position: fixed; top: 0; left: 0; z-index: 1; }
+        #css-renderer { position: fixed; top: 0; left: 0; z-index: 2; }
+        
+        /* Kirish animatsiyasi tugaguncha sahna harakatlarini to'xtatish uchun */
+        #css-renderer.disabled {
+            pointer-events: none;
+        }
 
-/* ===== INPUT AREA ===== */
-.input-area{display:flex;gap:10px;padding:10px;background:rgba(0,0,0,0.3);}
-.input-area input{flex:1;padding:12px;border:none;border-radius:30px 0 0 30px;background:rgba(255,255,255,0.1);color:#fff;outline:none;transition:0.3s;}
-.input-area input:focus{background:rgba(255,255,255,0.2);box-shadow:0 0 10px #00ffcc;}
-.input-area button{padding:12px 20px;border:none;border-radius:0 30px 30px 0;background:linear-gradient(45deg,#00ffcc,#0066ff);color:#fff;cursor:pointer;transition:0.3s;}
-.input-area button:hover{transform:scale(1.05);}
+        /* ===== CHAT KONTENTI UCHUN MAXSUS DIV (Smartfon Ekrani) ===== */
+        #chat-3d-wall {
+            width: 400px; 
+            height: 700px; 
+            overflow: hidden;
+            border-radius: 40px; 
+            background: rgba(10, 5, 20, 0.9); 
+            box-shadow: 0 0 15px rgba(0,255,204,0.5), inset 0 0 10px rgba(0,255,204,0.1); 
+            transition: box-shadow 0.5s;
+        }
+        #chat-3d-wall:hover {
+             box-shadow: 0 0 70px rgba(0,255,204,0.9);
+        }
 
-/* ===== BUTTONS ===== */
-.btns{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
-.btns button{padding:12px;border-radius:12px;border:none;background:rgba(255,255,255,0.1);color:#fff;font-size:1rem;cursor:pointer;transition:0.3s;animation:popIn 0.4s ease;}
-.btns button:hover{background:rgba(0,255,204,0.3);transform:scale(1.1);}
-@keyframes popIn{from{opacity:0;transform:translateY(20px) scale(0.9);}to{opacity:1;transform:translateY(0) scale(1);}}
-
-/* ===== PARTICLES ===== */
-.particle{position:absolute;background:rgba(255,255,255,0.4);border-radius:50%;animation:float linear infinite;}
-@keyframes float{from{transform:translateY(100vh) scale(0);opacity:0;}to{transform:translateY(-10vh) scale(1);opacity:1;}}
-
-/* ===== TYPING ANIMATION ===== */
-.typing{display:flex;gap:4px;}
-.typing span{width:8px;height:8px;background:#00ffcc;border-radius:50%;animation:dot 1s infinite;}
-.typing span:nth-child(2){animation-delay:0.2s;}
-.typing span:nth-child(3){animation-delay:0.4s;}
-@keyframes dot{0%,80%,100%{transform:scale(0);}40%{transform:scale(1);}}
-</style>
+        /* Qolgan CSS dizayn elementlari (oldindan qolgan futuristik stil) */
+        .chat-container{
+            display:flex; width:100%; height:100%;
+            background:transparent; backdrop-filter:blur(2px); 
+            border-radius:40px; 
+            flex-direction:column; position:relative; overflow:hidden;
+        }
+        #profileBar{
+            display:flex;align-items:center;gap:15px;padding:15px;
+            background:rgba(0,0,0,0.4);border-bottom: 1px solid #00ffcc; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            border-top-left-radius: 40px; border-top-right-radius: 40px; 
+        }
+        #profileBar img{width:48px;height:48px;border-radius:50%;border:3px solid #00ffcc; filter: drop-shadow(0 0 5px #00ffcc);}
+        #profileBar span{color:#fff;font-weight:bold;font-size:1.2rem;text-shadow: 0 0 8px #00ffcc;}
+        .chat-box{flex:1;padding:15px;overflow-y:auto;color:#fff;display:flex;flex-direction:column;gap:15px;}
+        .msg{max-width:80%;padding:14px 18px;border-radius:18px;line-height:1.5em;animation:fadeIn 0.4s ease;position:relative;box-shadow: inset 0 0 5px rgba(255,255,255,0.05);}
+        .bot{background:rgba(0,255,204,0.15); border: 1px solid #00ffcc66; align-self:flex-start;}
+        .user{background:rgba(255,0,255,0.15); border: 1px solid #ff00ff66; align-self:flex-end;}
+        .msg span.time{position:absolute;bottom:-20px;right:10px;font-size:11px;color:#777;text-shadow: 0 0 2px #000;}
+        .input-area{
+            display:flex;gap:10px;padding:15px;background:rgba(0,0,0,0.6); border-top: 1px solid #00ffcc44;
+            border-bottom-left-radius: 40px; border-bottom-right-radius: 40px;
+        }
+        .input-area input{
+            flex:1;padding:16px;border:none;border-radius:40px; 
+            background:rgba(255,255,255,0.05);color:#fff;outline:none;transition:0.3s;
+            box-shadow:inset 0 0 10px rgba(0,255,204,0.1);
+        }
+        .input-area input:focus{background:rgba(255,255,255,0.1);box-shadow:0 0 15px #00ffcc, inset 0 0 10px #00ffcc;}
+        .input-area button{
+            width: 55px; height: 55px;padding:0;border:none;border-radius:50%;
+            background:linear-gradient(45deg,#00ffcc,#0066ff);color:#fff;cursor:pointer;transition:0.3s;
+            font-size: 1.6rem;display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 0 10px rgba(0,255,204,0.8); 
+        }
+        .input-area button:hover{transform:scale(1.05); box-shadow: 0 0 20px #fff;}
+        .btns{display:flex;flex-direction:column;gap:12px;margin-top:20px;}
+        .btns button{
+            padding:16px;border-radius:10px;
+            border: 1px solid #00ffcc; 
+            background:rgba(0,0,0,0.5);
+            color:#fff;font-size:1.05rem;font-weight: 500;cursor:pointer;transition:0.3s;
+            text-shadow: 0 0 5px #00ffcc;
+            box-shadow: 0 0 8px rgba(0,255,204,0.5);
+        }
+        .btns button:hover{
+            background:rgba(0,255,204,0.1);
+            transform:translateY(-1px);
+            box-shadow: 0 0 15px #00ffcc, 0 0 25px rgba(0,255,204,0.7);
+        }
+    </style>
 </head>
 <body>
-<!-- Loader -->
 <div id="loader">
-  <div class="spinner"></div>
-  Yuklanmoqda...
+  <div class="spinner"></div>
+  3D Smartfon Stansiyasi Yuklanmoqda...
 </div>
 
-<!-- PROFIL MODAL -->
-<div id="profileModal" style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:flex;justify-content:center;align-items:center;z-index:10000;flex-direction:column;gap:15px;border-radius:20px;">
-  <h2 style="color:#fff;font-size:1.5rem;">Profil yaratish</h2>
-  <input id="profileNameInput" placeholder="Ismingizni kiriting..." style="padding:10px 15px;border-radius:10px;border:none;outline:none;font-size:1rem;">
-  <div style="display:flex;gap:10px;">
-    <button class="emojiBtn" style="font-size:2rem;">🙂</button>
-    <button class="emojiBtn" style="font-size:2rem;">😂</button>
-    <button class="emojiBtn" style="font-size:2rem;">😍</button>
-    <button class="emojiBtn" style="font-size:2rem;">😎</button>
-  </div>
-  <button id="profileConfirmBtn" style="padding:10px 20px;border-radius:10px;border:none;background:#00ffcc;color:#000;font-weight:bold;cursor:pointer;">Tasdiqlash</button>
+<div id="chat-3d-wall">
+    <div class="chat-container">
+      <div id="profileBar">
+        <img id="userAvatar" src="https://via.placeholder.com/45" alt="Profil">
+        <span id="userName">😎 Ferkaveka AI</span>
+        <button id="speechToggle" style="margin-left:auto;padding:5px 10px;border:none;border-radius:8px;background:#00ffcc;color:#000;cursor:pointer;font-weight:bold;">🔊 O‘qish</button>
+      </div>
+      <div class="chat-box" id="chatBox"></div>
+      <div class="input-area">
+        <input type="text" id="userInput" placeholder="Xabar yozing...">
+        <button onclick="sendMsg()">➤</button>
+      </div>
+    </div>
 </div>
 
-<!-- Chat -->
-<div class="chat-container">
-  <div id="profileBar">
-    <img id="userAvatar" src="https://via.placeholder.com/40" alt="Profil">
-    <span id="userName">Foydalanuvchi</span>
-    <button id="speechToggle" style="margin-left:auto;padding:5px 10px;border:none;border-radius:8px;background:#00ffcc;color:#000;cursor:pointer;">🔊 O‘qish</button>
-  </div>
-  <div class="chat-box" id="chatBox"></div>
-  <div class="input-area">
-    <input type="text" id="userInput" placeholder="Xabar yozing...">
-    <button onclick="sendMsg()">➤</button>
-  </div>
-</div>
+<script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { CSS3DRenderer, CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
 
-<script>
-let stats={messages:0,buttonsClicked:0,lastActive:new Date()};
-let chatBox=document.getElementById("chatBox");
-let userName="Foydalanuvchi";
-let userEmoji="🙂";
-let profileModal=document.getElementById("profileModal");
-let profileInput=document.getElementById("profileNameInput");
-let profileConfirmBtn=document.getElementById("profileConfirmBtn");
-let emojiButtons=document.querySelectorAll(".emojiBtn");
-let speechEnabled=true;
-let speechToggle=document.getElementById("speechToggle");
+    // Global o'zgaruvchilar
+    let renderer, cssRenderer, scene, camera, controls;
+    const chatWallElement = document.getElementById('chat-3d-wall');
+    let animationComplete = false;
 
-// Loader
-window.onload=()=>{
-  setTimeout(()=>{
-    document.getElementById('loader').style.display="none"; 
-    profileModal.style.display="flex";
-  },2000);
-}
+    // --- Telefon O'lchamlari ---
+    const PHONE_WIDTH = 400; 
+    const PHONE_HEIGHT = 700; 
 
-// PROFILE
-emojiButtons.forEach(btn=>{
-  btn.addEventListener("click",()=>{
-    emojiButtons.forEach(b=>b.style.border="none");
-    btn.style.border="2px solid #00ffcc";
-    userEmoji=btn.innerText;
-  });
-});
+    init();
+    
+    // ===========================================
+    // SIZNING CHAT BOT FUNKSIYALARINGIZ (oldingi koddan)
+    // ===========================================
+    let stats={messages:0,buttonsClicked:0,lastActive:new Date()};
+    let chatBox=document.getElementById("chatBox");
+    let speechEnabled=true;
+    let speechToggle=document.getElementById("speechToggle");
+    speechToggle.addEventListener("click", () => {
+        speechEnabled = !speechEnabled;
+        speechToggle.innerText = speechEnabled ? "🔊 O‘qish" : "🔇 O‘qimaslik";
+    });
+    function botMsg(text, btns=false, voice=false, multi=false){
+        stats.messages++; stats.lastActive=new Date(); let div=document.createElement("div"); div.className="msg bot"; if(multi) div.innerHTML=text; else div.innerHTML=text.replace(/\n/g,"<br>"); let timeSpan=document.createElement("span"); timeSpan.className="time"; let d=new Date(); timeSpan.innerText=`${d.getHours()}:${("0"+d.getMinutes()).slice(-2)}`; div.appendChild(timeSpan); chatBox.appendChild(div); if(btns) chatBox.appendChild(btns); chatBox.scrollTop=chatBox.scrollHeight; if(voice && speechEnabled && 'speechSynthesis' in window){ let msg=new SpeechSynthesisUtterance(text.replace(/<[^>]*>/g,'')); msg.lang='uz-UZ'; window.speechSynthesis.speak(msg); }
+    }
+    function userMsg(text){
+        stats.messages++; stats.lastActive=new Date(); let div=document.createElement("div"); div.className="msg user"; div.innerHTML=`${text} <span class="time">${new Date().getHours()}:${("0"+new Date().getMinutes()).slice(-2)}</span>`; chatBox.appendChild(div); chatBox.scrollTop=chatBox.scrollHeight;
+    }
+    window.sendMsg = function() {
+        let val=document.getElementById("userInput").value.trim(); if(!val) return; userMsg(val); document.getElementById("userInput").value=""; setTimeout(()=>{ let reply="Kechirasiz, men hali faqat tugmalar orqali ishlayman, lekin tez orada AI javob qo‘shiladi!"; botMsg(reply,true,true); },700);
+    }
+    function makeBackBtn(){
+        let div=document.createElement("div"); div.className="btns"; div.innerHTML=`<button onclick="back()">⬅️ Orqaga</button>`; return div;
+    }
+    window.back = function(){ showMainBtns(); stats.buttonsClicked++; }
+    window.contact = function() { stats.buttonsClicked++; botMsg(`Telegram: <b>@shohcore</b><br>Instagram: <b>@shohbekcore</b><br>Tel: <b>+998 90 104 13 34</b>`,makeBackBtn(),true); }
+    window.about = function() { stats.buttonsClicked++; botMsg(`Ferkaveka — kreativ loyiha bo'lib, foydalanuvchilarga innovatsion yechimlar va o'yinlar taqdim etadi.`,makeBackBtn(),true); }
+    window.service = function() { stats.buttonsClicked++; botMsg(`Bizning xizmatlar: <br>- Web saytlar <br>- 3D o'yinlar <br>- Mobil ilovalar`,makeBackBtn(),true); }
+    window.problem = function() { stats.buttonsClicked++; botMsg(`Saytdan foydalanish uchun: menyudan kerakli bo‘limni tanlang. Muammo bo‘lsa “Aloqa” bo‘limidan foydalaning.`,makeBackBtn(),true); }
+    window.faq = function() { stats.buttonsClicked++; botMsg(`<b>Tez-tez beriladigan savollar:</b><br>- Loyiha qancha vaqtda tayyor bo'ladi?<br>- Narxlar qanday shakllanadi?<br>Batafsil ma'lumot uchun biz bilan aloqaga chiqing!`,makeBackBtn(),true); }
+    window.portfolio = function() { stats.buttonsClicked++; botMsg(`Portfoliomizni ko'rish uchun ushbu havoladan foydalaning: <a href="#">[Havola]</a>. Tez orada 3D formatda taqdim etiladi!`,makeBackBtn(),true,true); }
+    window.fun = function(){ stats.buttonsClicked++; botMsg(`Qiziqarli fakt: Ferkaveka nomi juda noyob va kreativ tarzda o‘ylab topilgan! <br><img src="https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif" width="150">`,makeBackBtn(),true,true); }
+    function showMainBtns(){
+        let btns=document.createElement("div"); btns.className="btns"; btns.innerHTML=`<button onclick="contact()">📞 Aloqaga chiqmoqchiman</button><button onclick="about()">ℹ️ Ferkaveka kim?</button><button onclick="service()">🛠 Xizmatlar</button><button onclick="problem()">⚠️ Saytda muammo bor</button><button onclick="faq()">❓ Tez-tez beriladigan savollar</button><button onclick="portfolio()">🎨 Portfolioni ko'rish</button><button onclick="moreBtns()">➕ Yana</button>`; botMsg("Quyidagilardan birini tanlang:", btns, true);
+    }
+    window.moreBtns = function() { stats.buttonsClicked++;
+        let btns=document.createElement("div"); btns.className="btns"; btns.innerHTML=`<button onclick="botMsg('📰 Yangiliklar bo‘limi ishlab chiqilmoqda...',makeBackBtn(),true)">📰 Yangiliklar</button><button onclick="fun()">🎮 Qiziqarli faktlar</button><button onclick="botMsg('📚 Qo‘llanmalar tez orada!',makeBackBtn(),true)">📚 Qo‘llanmalar</button><button onclick="botMsg('💡 Innovatsion g‘oyalar Ferkaveka bilan!',makeBackBtn(),true)">💡 Innovatsiyalar</button><button onclick="botMsg('👨‍💻 Bizning jamoamiz haqida tez orada!',makeBackBtn(),true)">👨‍💻 Jamoa</button>`; botMsg("Yana tugmalar:",btns,true);
+    }
+    let touchStartY=0;
+    document.getElementById('chatBox').addEventListener('touchstart',(e)=>{touchStartY=e.changedTouches[0].screenY; e.stopPropagation();});
+    document.getElementById('chatBox').addEventListener('touchend',(e)=>{
+      let touchEndY=e.changedTouches[0].screenY;
+      if(Math.abs(touchStartY - touchEndY) > 50){ e.stopPropagation(); }
+    });
+    // ===========================================
+    // THREE.JS INIT
+    // ===========================================
 
-profileConfirmBtn.addEventListener("click",()=>{
-  let val=profileInput.value.trim();
-  if(val) userName=val;
-  document.getElementById("userName").innerText=`${userEmoji} ${userName}`;
-  profileModal.style.display="none";
-  document.querySelector('.chat-container').style.display="flex";
-  botMsg("Salom! Men Ferkaveka AI yordamchiman. Quyidagilardan birini tanlang:");
-  showMainBtns();
-  spawnParticles();
-});
+    function createPhoneFrame() {
+        const frameW = PHONE_WIDTH + 50; 
+        const frameH = PHONE_HEIGHT + 50; 
+        const frameD = 20;
 
-// ===== SPEECH TOGGLE =====
-speechToggle.addEventListener("click", () => {
-  speechEnabled = !speechEnabled;
-  speechToggle.innerText = speechEnabled ? "🔊 O‘qish" : "🔇 O‘qimaslik";
-});
+        const geometry = new THREE.BoxGeometry(frameW, frameH, frameD);
+        const material = new THREE.MeshStandardMaterial({
+            color: 0x1a1a1a,
+            metalness: 0.9,
+            roughness: 0.2,
+            emissive: 0x00ffcc,
+            emissiveIntensity: 0.2,
+        });
 
-// ===== MESSAGES =====
-function botMsg(text, btns=false, voice=false, multi=false){
-  stats.messages++;
-  stats.lastActive=new Date();
-  let div=document.createElement("div");
-  div.className="msg bot";
-  if(multi) div.innerHTML=text; else div.innerHTML=text.replace(/\n/g,"<br>");
-  let timeSpan=document.createElement("span");
-  timeSpan.className="time";
-  let d=new Date(); timeSpan.innerText=`${d.getHours()}:${("0"+d.getMinutes()).slice(-2)}`;
-  div.appendChild(timeSpan);
-  chatBox.appendChild(div);
-  if(btns) chatBox.appendChild(btns);
-  chatBox.scrollTop=chatBox.scrollHeight;
-  
-  // Ovoz bilan o‘qish
-  if(voice && speechEnabled && 'speechSynthesis' in window){
-    let msg=new SpeechSynthesisUtterance(text.replace(/<[^>]*>/g,''));
-    msg.lang='uz-UZ';
-    window.speechSynthesis.speak(msg);
-  }
-}
+        const phoneFrame = new THREE.Mesh(geometry, material);
+        return phoneFrame;
+    }
 
-function userMsg(text){
-  stats.messages++;
-  stats.lastActive=new Date();
-  let div=document.createElement("div");
-  div.className="msg user";
-  div.innerHTML=`${text} <span class="time">${new Date().getHours()}:${("0"+new Date().getMinutes()).slice(-2)}</span>`;
-  chatBox.appendChild(div);
-  chatBox.scrollTop=chatBox.scrollHeight;
-}
+    function init() {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
 
-// SEND
-function sendMsg(){
-  let val=document.getElementById("userInput").value.trim();
-  if(!val) return;
-  userMsg(val);
-  document.getElementById("userInput").value="";
-  setTimeout(()=>{
-    let reply="Kechirasiz, men hali faqat tugmalar orqali ishlayman, lekin tez orada AI javob qo‘shiladi!";
-    botMsg(reply,true,true);
-  },700);
-}
+        const isMobile = width < 768 || width < height;
+        
+        // --- Mobil Moslashuv Tuzatishlari (Katta Boshlang'ich Masofa) ---
+        // Telefon ancha uzoqdan uchib kelishi uchun qiymat oshirildi
+        const initialCameraZ = isMobile ? 6000 : 4500; 
+        
+        // Yakuniy Kamera Masofasi o'zgarishsiz
+        const finalCameraZ = isMobile ? 1200 : 700; 
 
-// ===== BUTTONS =====
-function showMainBtns(){
-  let btns=document.createElement("div"); btns.className="btns";
-  btns.innerHTML=`
-    <button onclick="contact()">📞 Aloqaga chiqmoqchiman</button>
-    <button onclick="about()">ℹ️ Ferkaveka kim?</button>
-    <button onclick="problem()">⚠️ Saytda muammo bor</button>
-    <button onclick="service()">🛠 Xizmatlar</button>
-    <button onclick="fun()">🎮 Qiziqarli faktlar</button>
-    <button onclick="moreBtns()">➕ Yana</button>
-  `;
-  botMsg("Quyidagilardan birini tanlang:", btns, true);
-}
+        // --- 1. Kamera ---
+        camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 8000); // Max zoom masofasini oshiramiz
+        camera.position.set(0, 0, initialCameraZ); 
 
-// FUNKSIYALAR
-function back(){ showMainBtns(); stats.buttonsClicked++; }
-function makeBackBtn(){
-  let div=document.createElement("div");
-  div.className="btns";
-  div.innerHTML=`<button onclick="back()">⬅️ Orqaga</button>`;
-  return div;
-}
-function contact(){ stats.buttonsClicked++;
-  botMsg(`Telegram: <b>@shohcore</b><br>Instagram: <b>@shohbekcore</b><br>Tel: <b>+998 90 104 13 34</b>`,makeBackBtn(),true);
-}
-function about(){ stats.buttonsClicked++;
-  botMsg(`Ferkaveka — kreativ loyiha bo'lib, foydalanuvchilarga innovatsion yechimlar va o'yinlar taqdim etadi.`,makeBackBtn(),true);
-}
-function problem(){ stats.buttonsClicked++;
-  botMsg(`Saytdan foydalanish uchun: menyudan kerakli bo‘limni tanlang. Muammo bo‘lsa “Aloqa” bo‘limidan foydalaning.`,makeBackBtn(),true);
-}
-function service(){ stats.buttonsClicked++;
-  botMsg(`Bizning xizmatlar: <br>- Web saytlar <br>- 3D o'yinlar <br>- Mobil ilovalar`,makeBackBtn(),true);
-}
-function fun(){ stats.buttonsClicked++;
-  botMsg(`Qiziqarli fakt: Ferkaveka nomi juda noyob va kreativ tarzda o‘ylab topilgan! <br><img src="https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif" width="150">`,makeBackBtn(),true,true);
-}
-function moreBtns(){ stats.buttonsClicked++;
-  let btns=document.createElement("div"); btns.className="btns";
-  btns.innerHTML=`
-    <button onclick="botMsg('📰 Yangiliklar bo‘limi ishlab chiqilmoqda...',makeBackBtn(),true)">📰 Yangiliklar</button>
-    <button onclick="botMsg('📚 Qo‘llanmalar tez orada!',makeBackBtn(),true)">📚 Qo‘llanmalar</button>
-    <button onclick="botMsg('💡 Innovatsion g‘oyalar Ferkaveka bilan!',makeBackBtn(),true)">💡 Innovatsiyalar</button>
-    <button onclick="botMsg('⚙️ Sozlamalar hali qo‘shilmagan!',makeBackBtn(),true)">⚙️ Sozlamalar</button>
-    <button onclick="botMsg('👨‍💻 Bizning jamoamiz haqida tez orada!',makeBackBtn(),true)">👨‍💻 Jamoa</button>
-  `;
-  botMsg("Yana tugmalar:",btns,true);
-}
+        scene = new THREE.Scene();
+        scene.fog = new THREE.Fog(0x000000, 1000, 5000); // Tuman masofasini oshiramiz
 
-// PARTICLES
-function spawnParticles(){
-  for(let i=0;i<30;i++){
-    let p=document.createElement("div");
-    p.className="particle";
-    let size=Math.random()*8+4;
-    p.style.width=p.style.height=size+"px";
-    p.style.left=Math.random()*100+"vw";
-    p.style.background=`rgba(${Math.floor(Math.random()*255)},${Math.floor(Math.random()*255)},${Math.floor(Math.random()*255)},0.5)`;
-    p.style.animationDuration=(Math.random()*10+5)+"s";
-    document.body.appendChild(p);
-  }
-}
+        // --- 2. Telefon Ramkasi (3D Obyekt) ---
+        const phoneFrame = createPhoneFrame();
+        scene.add(phoneFrame);
 
-// MOBILE SWIPE
-let touchStartY=0;
-document.addEventListener('touchstart',(e)=>{touchStartY=e.changedTouches[0].screenY;});
-document.addEventListener('touchend',(e)=>{
-  let touchEndY=e.changedTouches[0].screenY;
-  if(touchStartY - touchEndY > 50){
-    chatBox.scrollTop+=50;
-  } else if(touchEndY - touchStartY > 50){
-    chatBox.scrollTop-=50;
-  }
-});
+        // --- 3. Rendererlar ---
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(width, height);
+        renderer.setClearColor(0x000000);
+        renderer.domElement.id = 'webgl-renderer';
+        document.body.appendChild(renderer.domElement);
+
+        cssRenderer = new CSS3DRenderer();
+        cssRenderer.setSize(width, height);
+        cssRenderer.domElement.id = 'css-renderer';
+        cssRenderer.domElement.classList.add('disabled'); 
+        document.body.appendChild(cssRenderer.domElement);
+
+        // --- 4. CSS3D Obyektni Yaratish (Chat Ekrani) ---
+        const cssObject = new CSS3DObject(chatWallElement);
+        cssObject.position.set(0, 0, 11); 
+        scene.add(cssObject);
+
+        // --- 5. Kosmik Fon va Yoritish ---
+        const starGeometry = new THREE.BufferGeometry();
+        const positions = [];
+        // Yulduzlar sonini ko'paytiramiz va kosmos hajmini oshiramiz
+        for (let i = 0; i < 5000; i++) {
+            positions.push((Math.random() - 0.5) * 6000, (Math.random() - 0.5) * 6000, (Math.random() - 0.5) * 6000);
+        }
+        starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+        scene.add(new THREE.Points(starGeometry, new THREE.PointsMaterial({ color: 0xcccccc, size: 8, sizeAttenuation: true })));
+        scene.add(new THREE.AmbientLight(0x444444));
+        const pointLight = new THREE.PointLight(0x00ffcc, 5, 1000); 
+        pointLight.position.set(500, 500, 500);
+        scene.add(pointLight);
+
+
+        // --- 7. Kirish Animatsiyasi (GSAP) ---
+        gsap.to(camera.position, {
+            z: finalCameraZ, // Yakuniy masofa
+            duration: 4, // Animatsiyani uzaytiramiz (chunki masofa oshdi)
+            ease: "power2.out", 
+            onComplete: () => {
+                animationComplete = true;
+                cssRenderer.domElement.classList.remove('disabled'); 
+                
+                // OrbitControls ni yoqish
+                controls = new OrbitControls(camera, cssRenderer.domElement);
+                controls.enableDamping = true;
+                controls.dampingFactor = 0.05;
+                controls.minDistance = finalCameraZ - 50; 
+                controls.maxDistance = finalCameraZ + 2500; // Maksimal masofani ham oshiramiz
+
+                // Chatni boshlash
+                document.getElementById('loader').style.display = 'none';
+                document.querySelector('.chat-container').style.display = 'flex';
+                botMsg("Salom! Men Ferkaveka AI yordamchiman. Quyidagilardan birini tanlang:");
+                showMainBtns();
+            }
+        });
+
+        // --- 8. Render Loop ---
+        animate();
+
+        // --- 9. Responsive dizayn ---
+        window.addEventListener('resize', onWindowResize, false);
+        
+        document.getElementById('loader').style.display = 'none';
+    }
+
+    function onWindowResize() {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+        renderer.setSize(width, height);
+        cssRenderer.setSize(width, height);
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+
+        if (animationComplete && controls) {
+            controls.update(); 
+        }
+        
+        renderer.render(scene, camera);
+        cssRenderer.render(scene, camera);
+    }
+    
 </script>
 </body>
 </html>
