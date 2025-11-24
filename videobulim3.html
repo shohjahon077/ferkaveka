@@ -3,267 +3,432 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FERKAVEKA 3D Videolar</title>
+<title>FERKAVEKA KIBER-GALAKTIKA VIDEOLAR 2</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script> 
 <style>
+/* -------------------- Global O'zgaruvchilar -------------------- */
 :root{
-  --bg-color:#f5f5f5;
-  --text-color:#222;
-  --card-bg:#fff;
-  --primary-color:#ff3c00;
+    --bg-color: #0d0d0d; /* Juda qorong'i kibernetik fon */
+    --text-color: #e0e0e0;
+    --glass-color: rgba(35, 35, 35, 0.6); /* Shaffof qora shisha */
+    --primary-neon: #00ffc4; /* Yalpiz yashil neon */
+    --secondary-neon: #ff00ff; /* Pushti/Binafsha neon */
+    --blur-strength: 15px; /* Shisha effekti kuchi */
 }
+
+/* -------------------- Neon Rang Sxemasi (Dark/Light rejim sifatida ishlatiladi) -------------------- */
+body.dark{
+    --primary-neon: #ffa500; /* Apelsin neoniga o'tish */
+    --secondary-neon: #0088ff; /* Moviy neon */
+}
+
+/* -------------------- Umumiy Stillar -------------------- */
 body{
-  margin:0;
-  font-family:'Poppins', sans-serif;
-  background:var(--bg-color);
-  color:var(--text-color);
-  overflow-x:hidden;
-  transition: background 0.5s, color 0.5s;
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    color: var(--text-color);
+    overflow-x: hidden;
+    line-height: 1.6;
+    background-color: var(--bg-color); /* Three.js yuklanguncha qora fon */
 }
+
+/* -------------------- 3D Galaktika Canvas Stili -------------------- */
+#galaxyCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1; /* Boshqa barcha kontentning orqasiga yuborish */
+    display: block;
+    opacity: 0.8; 
+}
+
 header{
-  text-align:center;
-  padding:20px;
-  font-size:2em;
-  color:var(--primary-color);
-  letter-spacing:2px;
-  animation: headerAnim 2s ease-in-out infinite alternate;
+    text-align: center;
+    padding: 30px 20px 20px;
+    font-size: 2.5em;
+    font-weight: 900;
+    letter-spacing: 4px;
+    
+    color: var(--primary-neon);
+    /* NEON GLOW EFFECT */
+    text-shadow: 0 0 5px var(--primary-neon), 0 0 10px var(--primary-neon), 0 0 20px #000;
+    
+    animation: headerAnim 2s ease-in-out infinite alternate;
 }
 @keyframes headerAnim{
-  0%{transform:scale(1);}
-  50%{transform:scale(1.05) rotateZ(3deg);}
-  100%{transform:scale(1);}
+    0%{transform: scale(1) translateY(0); opacity: 0.9;}
+    100%{transform: scale(1.02) translateY(-5px); opacity: 1; text-shadow: 0 0 7px var(--primary-neon), 0 0 15px var(--primary-neon);}
 }
+
+/* -------------------- Boshqaruvlar -------------------- */
 #controls{
-  text-align:center;
-  margin-bottom:20px;
+    text-align: center;
+    margin-bottom: 30px;
 }
 #themeToggle{
-  padding:10px 20px;
-  border:none;
-  border-radius:12px;
-  background:var(--primary-color);
-  color:#fff;
-  font-weight:bold;
-  cursor:pointer;
-  transition:0.3s;
+    padding: 12px 25px;
+    border: 2px solid var(--secondary-neon);
+    border-radius: 50px; 
+    background: transparent;
+    color: var(--secondary-neon);
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1.1em;
+    /* NEON Tugma Soyasi */
+    box-shadow: 0 0 10px var(--secondary-neon), inset 0 0 5px var(--secondary-neon);
+    transition: 0.4s ease-in-out;
 }
 #themeToggle:hover{
-  transform:scale(1.1);
+    transform: scale(1.05);
+    background: var(--secondary-neon);
+    color: var(--bg-color);
+    box-shadow: 0 0 15px var(--secondary-neon), 0 0 30px var(--secondary-neon);
 }
+
+/* -------------------- Kontent Konteyneri -------------------- */
 #container{
-  display:flex;
-  flex-wrap:wrap;
-  justify-content:center;
-  gap:100px;
-  padding:20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 40px; 
+    padding: 20px;
 }
+
+/* -------------------- Video Kartochkasi (Glassmorphism) -------------------- */
 .video-card{
-  background:var(--card-bg);
-  border-radius:20px;
-  width:400px;
-  height:100%;
-  perspective:1000px;
-  cursor:pointer;
-  transition: transform 0.5s, box-shadow 0.5s;
-  animation: fadeIn 1s ease forwards;
+    background: var(--glass-color); 
+    border-radius: 30px; 
+    width: 380px; 
+    min-height: 350px;
+    overflow: hidden; 
+    cursor: pointer;
+    
+    /* GLASSMORPHISM EFFEKTLARI */
+    backdrop-filter: blur(var(--blur-strength));
+    -webkit-backdrop-filter: blur(var(--blur-strength));
+    border: 1px solid rgba(255, 255, 255, 0.1); /* Yengil oq chegara */
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+    
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.6s ease;
+    
+    opacity: 0;
+    transform: translateY(50px);
 }
+
 .video-card:hover{
-  transform: rotateY(15deg) rotateX(10deg) scale(1.05);
-  box-shadow:0 20px 40px rgba(0,0,0,0.3);
+    transform: rotateY(2deg) rotateX(1deg) scale(1.04) translateZ(10px);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 25px var(--primary-neon);
 }
 .video-card video{
-  width:100%;
-  height:100%;
-  border-radius:20px;
-  object-fit:cover;
+    width: 100%;
+    height: auto; 
+    display: block;
+    border-radius: 25px 25px 0 0;
+    object-fit: cover;
 }
+
+/* -------------------- Video Ma'lumoti -------------------- */
 .video-info{
-  padding:10px;
-  display:flex;
-  justify-content:space-between;
+    padding: 15px;
+    display: flex;
+    justify-content: space-around;
 }
 .video-info button{
-  border:none;
-  padding:5px 10px;
-  border-radius:10px;
-  cursor:pointer;
-  font-weight:bold;
-  transition:0.3s;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-weight: 700;
+    transition: 0.2s ease-in-out;
+    font-size: 0.9em;
+    text-transform: uppercase;
+    color: var(--bg-color); 
 }
-.like{background:#0f0;color:#000;}
-.dislike{background:#f00;color:#fff;}
-.comment{background:#00f;color:#fff;}
+.video-info button span {
+    margin-left: 5px;
+}
+
+/* Neon tugma ranglari */
+.like{background: #00ffc4; box-shadow: 0 0 5px #00ffc4;}
+.dislike{background: #ff4d4d; box-shadow: 0 0 5px #ff4d4d;}
+.comment{background: #5b99ff; box-shadow: 0 0 5px #5b99ff;}
+
+.video-info button:hover{
+    transform: scale(1.1);
+    color: #fff;
+    text-shadow: 0 0 5px #fff;
+}
+.video-info button:active{
+    transform: scale(0.95);
+    box-shadow: none;
+}
+
+/* -------------------- "Yana" Tugmasi -------------------- */
 #loadMore{
-  display:block;
-  margin:40px auto;
-  padding:12px 25px;
-  background:var(--primary-color);
-  border:none;
-  border-radius:12px;
-  font-size:1em;
-  cursor:pointer;
-  transition:0.3s;
+    display: block;
+    margin: 50px auto;
+    padding: 15px 40px;
+    background: transparent;
+    border: 2px solid var(--primary-neon);
+    border-radius: 30px;
+    font-size: 1.2em;
+    color: var(--primary-neon);
+    font-weight: bold;
+    cursor: pointer;
+    /* Neon Glow */
+    box-shadow: 0 0 15px var(--primary-neon);
+    transition: 0.4s ease;
 }
 #loadMore:hover{
-  transform: scale(1.1);
+    transform: scale(1.08);
+    background: var(--primary-neon);
+    color: var(--bg-color);
+    box-shadow: 0 0 25px var(--primary-neon), 0 0 50px var(--primary-neon);
 }
 
-/* Comment modal */
+/* -------------------- Komment Modal -------------------- */
 #commentModal{
-  position:fixed;
-  top:0;left:0;
-  width:100%;height:100%;
-  background:rgba(0,0,0,0.7);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  visibility:hidden;
-  opacity:0;
-  transition:0.3s;
-}
-#commentModal.active{
-  visibility:visible;
-  opacity:1;
+    z-index: 2000;
 }
 #commentModal .modal-content{
-  background:var(--card-bg);
-  padding:20px;
-  border-radius:20px;
-  width:90%;
-  max-width:400px;
+    background: var(--glass-color);
+    backdrop-filter: blur(var(--blur-strength));
+    border-radius: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+#commentModal h3 {
+    color: var(--primary-neon);
+    text-shadow: 0 0 5px var(--primary-neon);
 }
 #commentModal textarea{
-  width:100%;
-  height:80px;
-  margin-top:10px;
-  border-radius:12px;
-  border:1px solid #555;
-  padding:10px;
-  resize:none;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--secondary-neon);
+    color: var(--text-color);
 }
 #commentModal button{
-  margin-top:15px;
-  padding:8px 16px;
-  border:none;
-  border-radius:12px;
-  background:var(--primary-color);
-  color:#fff;
-  cursor:pointer;
+    background: var(--secondary-neon);
+    color: var(--bg-color);
+    box-shadow: 0 0 10px var(--secondary-neon);
+}
+#commentModal button:hover {
+    box-shadow: 0 0 20px var(--secondary-neon);
 }
 
-/* Animations */
+/* -------------------- Scroll Animatsiyasi -------------------- */
+.video-card.animated {
+    animation: fadeIn 1s cubic-bezier(0.17, 0.67, 0.83, 0.67) forwards;
+}
 @keyframes fadeIn{
-  0%{opacity:0; transform:translateY(30px);}
-  100%{opacity:1; transform:translateY(0);}
+    0%{opacity: 0; transform: translateY(80px) scale(0.9);}
+    100%{opacity: 1; transform: translateY(0) scale(1);}
 }
 
-/* Dark mode */
-body.dark{
-  --bg-color:#111;
-  --text-color:#eee;
-  --card-bg:#222;
-  --primary-color:#ff6600;
-}
-@media(max-width:600px){
-  .video-card{
-    width:90%;
-    height:100%;
-  }
+/* Media Queries */
+@media(max-width: 600px){
+    .video-card{
+      width: 90%;
+      height: 100%;
+    }
+    header{
+        font-size: 2em;
+    }
+    #loadMore{
+        font-size: 1em;
+        padding: 12px 25px;
+    }
 }
 </style>
 </head>
 <body>
 
+<canvas id="galaxyCanvas"></canvas>
+
 <header>FERKAVEKA VIDEOLAR 3</header>
 
 <div id="controls">
-  <button id="themeToggle" onclick="toggleTheme()">Kun/Tun</button>
+    <button id="themeToggle" onclick="toggleTheme()">Neon Rang O'zgartirish</button>
 </div>
 
 <div id="container">
-  <!-- 6 video kartochkalar -->
-  <div class="video-card"><video src="IMG_2478.MOV" preload="metadata" controls></video>
-    <div class="video-info">
-      <button class="like" onclick="likeVideo(this)">Like <span>0</span></button>
-      <button class="dislike" onclick="dislikeVideo(this)">Dislike <span>0</span></button>
-      <button class="comment" onclick="openComment()">Komment</button>
+    <div class="video-card"><video src="IMG_2478.MOV" preload="metadata" controls></video>
+        <div class="video-info">
+            <button class="like" onclick="likeVideo(this)">Like <span>0</span></button>
+            <button class="dislike" onclick="dislikeVideo(this)">Dislike <span>0</span></button>
+            <button class="comment" onclick="openComment()">Komment</button>
+        </div>
     </div>
-  </div>
-  <div class="video-card"><video src="IMG_2478.MOV" preload="metadata" controls></video>
-    <div class="video-info">
-      <button class="like" onclick="likeVideo(this)">Like <span>0</span></button>
-      <button class="dislike" onclick="dislikeVideo(this)">Dislike <span>0</span></button>
-      <button class="comment" onclick="openComment()">Komment</button>
+    <div class="video-card"><video src="IMG_2478.MOV" preload="metadata" controls></video>
+        <div class="video-info">
+            <button class="like" onclick="likeVideo(this)">Like <span>0</span></button>
+            <button class="dislike" onclick="dislikeVideo(this)">Dislike <span>0</span></button>
+            <button class="comment" onclick="openComment()">Komment</button>
+        </div>
     </div>
-  </div>
-  <div class="video-card"><video src="IMG_4854 (1).MOV" preload="metadata" controls></video>
-    <div class="video-info">
-      <button class="like" onclick="likeVideo(this)">Like <span>0</span></button>
-      <button class="dislike" onclick="dislikeVideo(this)">Dislike <span>0</span></button>
-      <button class="comment" onclick="openComment()">Komment</button>
+    <div class="video-card"><video src="IMG_4854 (1).MOV" preload="metadata" controls></video>
+        <div class="video-info">
+            <button class="like" onclick="likeVideo(this)">Like <span>0</span></button>
+            <button class="dislike" onclick="dislikeVideo(this)">Dislike <span>0</span></button>
+            <button class="comment" onclick="openComment()">Komment</button>
+        </div>
     </div>
-  </div>
-  <div class="video-card"><video src="IMG_8857.MOV" preload="metadata" controls></video>
-    <div class="video-info">
-      <button class="like" onclick="likeVideo(this)">Like <span>0</span></button>
-      <button class="dislike" onclick="dislikeVideo(this)">Dislike <span>0</span></button>
-      <button class="comment" onclick="openComment()">Komment</button>
+    <div class="video-card"><video src="IMG_8857.MOV" preload="metadata" controls></video>
+        <div class="video-info">
+            <button class="like" onclick="likeVideo(this)">Like <span>0</span></button>
+            <button class="dislike" onclick="dislikeVideo(this)">Dislike <span>0</span></button>
+            <button class="comment" onclick="openComment()">Komment</button>
+        </div>
     </div>
-  </div>
-  <div class="video-card"><video src="IMG_5039.MOV" preload="metadata" controls></video>
-    <div class="video-info">
-      <button class="like" onclick="likeVideo(this)">Like <span>0</span></button>
-      <button class="dislike" onclick="dislikeVideo(this)">Dislike <span>0</span></button>
-      <button class="comment" onclick="openComment()">Komment</button>
+    <div class="video-card"><video src="IMG_5039.MOV" preload="metadata" controls></video>
+        <div class="video-info">
+            <button class="like" onclick="likeVideo(this)">Like <span>0</span></button>
+            <button class="dislike" onclick="dislikeVideo(this)">Dislike <span>0</span></button>
+            <button class="comment" onclick="openComment()">Komment</button>
+        </div>
     </div>
-  </div>
-  <div class="video-card"><video src="IMG_6735.MOV" preload="metadata" controls></video>
-    <div class="video-info">
-      <button class="like" onclick="likeVideo(this)">Like <span>0</span></button>
-      <button class="dislike" onclick="dislikeVideo(this)">Dislike <span>0</span></button>
-      <button class="comment" onclick="openComment()">Komment</button>
+    <div class="video-card"><video src="IMG_6735.MOV" preload="metadata" controls></video>
+        <div class="video-info">
+            <button class="like" onclick="likeVideo(this)">Like <span>0</span></button>
+            <button class="dislike" onclick="dislikeVideo(this)">Dislike <span>0</span></button>
+            <button class="comment" onclick="openComment()">Komment</button>
+        </div>
     </div>
-  </div>
 </div>
 
-<a href="videobulim4.html"><button id="loadMore" onclick="loadMore()">Yana</button></a>
+<a href="videobulim4.html"><button id="loadMore" onclick="loadMore()">KEYINGI SAHIFA | YANA</button></a>
 
-<!-- Comment modal -->
 <div id="commentModal">
-  <div class="modal-content">
-    <h3>Komment qoldiring</h3>
-    <textarea placeholder="Xabar yozing..."></textarea>
-    <button onclick="closeComment()">Yopish</button>
-  </div>
+  <div class="modal-content">
+    <h3>Komment Qoldiring | Tizimga Kiring</h3>
+    <textarea placeholder="Fikringizni yozing..."></textarea>
+    <button onclick="closeComment()">Yopish | Tizimdan Chiqish</button>
+  </div>
 </div>
 
 <script>
-// Theme toggle
+// -------------------- THREE.JS (3D Galaktika) KODI --------------------
+let scene, camera, renderer, starGeo, stars;
+
+function initGalaxy() {
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x000000); 
+
+    camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 2000);
+    camera.position.z = 1;
+
+    renderer = new THREE.WebGLRenderer({ antialias: true, canvas: document.getElementById('galaxyCanvas') });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    
+    const starCount = 10000;
+    starGeo = new THREE.BufferGeometry();
+    const positions = [];
+
+    for (let i = 0; i < starCount; i++) {
+        // Yulduzlar uchun tasodifiy 3D joylashuv
+        positions.push((Math.random() - 0.5) * 2000); // x
+        positions.push((Math.random() - 0.5) * 2000); // y
+        positions.push((Math.random() - 0.5) * 2000); // z
+    }
+    starGeo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+
+    const starMaterial = new THREE.PointsMaterial({
+        color: 0xaa88ff, // Binafsha rang
+        size: 1.5, 
+        transparent: true,
+        blending: THREE.AdditiveBlending, 
+    });
+
+    stars = new THREE.Points(starGeo, starMaterial);
+    scene.add(stars);
+
+    window.addEventListener('resize', onWindowResize, false);
+    
+    animateGalaxy();
+}
+
+function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+function animateGalaxy() {
+    requestAnimationFrame(animateGalaxy);
+    
+    stars.rotation.y += 0.0001; 
+    stars.rotation.x += 0.00005;
+    
+    renderer.render(scene, camera);
+}
+// -------------------- THREE.JS KODI TUGADI --------------------
+
+
+// -------------------- ASOSIY JS FUNKSIYALARI --------------------
+
+// Theme toggle - Neon Rang Sxemasini o'zgartiradi
 function toggleTheme(){
-  document.body.classList.toggle('dark');
+    document.body.classList.toggle('dark');
+    const toggleButton = document.getElementById('themeToggle');
+
+    // Neon ranglarni almashtirish
+    if (document.body.classList.contains('dark')) {
+        toggleButton.textContent = "Apelsin Neoniga O'tish";
+    } else {
+        toggleButton.textContent = "Yalpiz Yashil Neoniga O'tish";
+    }
 }
 
 // Like/Dislike
 function likeVideo(btn){
-  let span=btn.querySelector('span');
-  span.textContent=parseInt(span.textContent)+1;
+    let span = btn.querySelector('span');
+    span.textContent = parseInt(span.textContent) + 1;
 }
 function dislikeVideo(btn){
-  let span=btn.querySelector('span');
-  span.textContent=parseInt(span.textContent)+1;
+    let span = btn.querySelector('span');
+    span.textContent = parseInt(span.textContent) + 1;
 }
 
-// Comment modal
+// Komment Modal funksiyalari
 function openComment(){
-  document.getElementById('commentModal').classList.add('active');
+    document.getElementById('commentModal').classList.add('active');
 }
 function closeComment(){
-  document.getElementById('commentModal').classList.remove('active');
+    document.getElementById('commentModal').classList.remove('active');
+    document.querySelector('#commentModal textarea').value = '';
 }
 
 // Load more
 function loadMore(){
-  alert("Yangi videolar yuklanadi...");
+    // Endi bu funksiya avtomatik ravishda videobulim3.html ga o'tadi
+    console.log("Keyingi sahifaga (videobulim3.html) yo'naltirilmoqda...");
+    // alert o'chirilgan, chunki bog'lanish avtomatik ishlaydi.
 }
+
+// Scroll Animatsiyasi (Intersection Observer)
+document.addEventListener('DOMContentLoaded', () => {
+    // Three.js galaktikasini ishga tushirish
+    initGalaxy(); 
+
+    const cards = document.querySelectorAll('.video-card');
+
+    const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animated');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, {
+        threshold: 0.1 
+    });
+
+    cards.forEach(card => {
+        observer.observe(card);
+    });
+});
 </script>
 
 </body>
