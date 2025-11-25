@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Ferkashops — Marketplace (Modern Demo)</title>
+  <title>Ferkashops — Marketplace (Haqiqiy Demo)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <meta name="theme-color" content="#0ea5e9"/>
   <style>
@@ -13,7 +13,6 @@
   </style>
 </head>
 <body class="bg-gradient-to-br from-sky-50 to-teal-50 dark:from-slate-900 dark:to-slate-800 min-h-screen transition-colors">
-  <!-- Header -->
   <header class="sticky top-0 z-30 bg-white/90 dark:bg-slate-900/90 backdrop-blur border-b border-slate-200 dark:border-slate-700">
     <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
       <div class="flex items-center gap-2">
@@ -23,12 +22,14 @@
       </div>
       <div class="flex gap-2 items-center w-full md:w-auto">
         <input id="search" class="flex-1 md:w-[480px] rounded-2xl border border-slate-200 px-4 py-2 outline-none focus:ring-2 focus:ring-sky-400 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200" placeholder="Nima qidiryapsiz? (masalan: iPhone, velosiped)"/>
-        <button id="darkToggle" class="p-2 rounded-xl border border-slate-200 dark:border-slate-700" title="Dark/Light"></button>
+        <button id="darkToggle" class="p-2 rounded-xl border border-slate-200 dark:border-slate-700" title="Dark/Light">
+            <svg id="sunIcon" class="w-5 h-5 text-yellow-500 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+            <svg id="moonIcon" class="w-5 h-5 text-slate-600 dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        </button>
       </div>
     </div>
   </header>
 
-  <!-- Filters -->
   <section class="max-w-7xl mx-auto px-4 mt-4 grid grid-cols-2 md:grid-cols-6 gap-2">
     <select id="categoryFilter" class="rounded-xl border border-slate-200 px-3 py-2 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200">
       <option value="">Barcha kategoriyalar</option>
@@ -49,7 +50,6 @@
     </label>
   </section>
 
-  <!-- Listings -->
   <main class="max-w-7xl mx-auto px-4 py-6">
     <div id="cards" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"></div>
     <div id="emptyState" class="hidden text-center py-16 text-slate-500 dark:text-slate-400">Hech narsa topilmadi. Filtrlarni o'zgartirib ko'ring.</div>
@@ -58,99 +58,148 @@
     </div>
   </main>
 
-  <!-- Modal -->
+  <button id="postItemBtn" class="fixed bottom-16 right-4 md:bottom-8 md:right-8 z-40 px-5 py-3 rounded-full shadow-lg text-white font-semibold bg-gradient-to-r from-sky-500 to-teal-500 hover:shadow-xl transition transform hover:scale-105">
+      ➕ Tovar joylash
+  </button>
+
   <div id="modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur flex items-center justify-center z-50">
     <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full p-4 relative">
-      <button id="closeModal" class="absolute top-3 right-3 text-xl" title="Yopish">✖</button>
+      <button id="closeModal" class="absolute top-6 right-6 text-xl z-50 p-1 rounded-full bg-white/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300" title="Yopish">✖</button>
       <div class="relative">
         <img id="mImage" class="w-full rounded-xl aspect-video object-cover bg-slate-100"/>
         <div class="absolute bottom-3 right-3 flex gap-2">
-          <button id="prevImg" class="px-2 py-1 rounded-lg bg-white/80 dark:bg-slate-800/80">◀</button>
-          <button id="nextImg" class="px-2 py-1 rounded-lg bg-white/80 dark:bg-slate-800/80">▶</button>
+          <button id="prevImg" class="px-2 py-1 rounded-lg bg-white/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300">◀</button>
+          <button id="nextImg" class="px-2 py-1 rounded-lg bg-white/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300">▶</button>
         </div>
       </div>
-      <h2 id="mTitle" class="text-xl font-bold mt-3"></h2>
+      <h2 id="mTitle" class="text-xl font-bold mt-3 text-slate-900 dark:text-white"></h2>
       <div class="flex items-center justify-between mt-1">
         <div id="mPrice" class="text-lg font-bold text-sky-600 dark:text-sky-400"></div>
-        <button id="mFav" class="px-3 py-1 rounded-xl border border-slate-200 dark:border-slate-700" title="Sevimlilarga qo'shish">♡</button>
+        <button id="mFav" class="px-3 py-1 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300" title="Sevimlilarga qo'shish">♡</button>
       </div>
       <div id="mLocation" class="text-sm text-slate-500 dark:text-slate-400"></div>
       <p id="mDesc" class="mt-3 text-slate-700 dark:text-slate-300"></p>
       <div class="grid grid-cols-2 gap-2 mt-4">
         <button id="revealPhone" class="bg-gradient-to-r from-sky-500 to-teal-500 text-white py-2 rounded-xl font-semibold">Telefonni ko‘rsatish</button>
-        <button id="shareBtn" class="border border-slate-200 dark:border-slate-700 rounded-xl font-semibold">Ulashish</button>
+        <button id="shareBtn" class="border border-slate-200 dark:border-slate-700 rounded-xl font-semibold text-slate-700 dark:text-slate-300">Ulashish</button>
       </div>
     </div>
   </div>
 
-  <!-- Bottom nav (mobile) -->
   <nav class="fixed bottom-0 inset-x-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur border-t border-slate-200 dark:border-slate-700 flex justify-around py-2 md:hidden">
-    <button class="flex flex-col items-center text-sky-600"><span>🏠</span><span class="text-xs">Bosh sahifa</span></button>
-    <button class="flex flex-col items-center"><span>📂</span><span class="text-xs">Kategoriyalar</span></button>
-    <button class="flex flex-col items-center"><span>🔍</span><span class="text-xs">Qidiruv</span></button>
-    <button class="flex flex-col items-center"><span>❤️</span><span class="text-xs">Sevimli</span></button>
+    <button class="flex flex-col items-center text-sky-600 dark:text-sky-400"><span>🏠</span><span class="text-xs">Bosh sahifa</span></button>
+    <button class="flex flex-col items-center text-slate-700 dark:text-slate-300"><span>📂</span><span class="text-xs">Kategoriyalar</span></button>
+    <button class="flex flex-col items-center text-slate-700 dark:text-slate-300"><span>🔍</span><span class="text-xs">Qidiruv</span></button>
+    <button class="flex flex-col items-center text-slate-700 dark:text-slate-300"><span>❤️</span><span class="text-xs">Sevimli</span></button>
   </nav>
 
-  <!-- Toast -->
-  <div id="toast" class="pointer-events-none fixed bottom-20 left-1/2 -translate-x-1/2 hidden bg-black/80 text-white px-4 py-2 rounded-xl text-sm"></div>
+  <div id="toast" class="pointer-events-none fixed bottom-20 left-1/2 -translate-x-1/2 hidden bg-black/80 text-white px-4 py-2 rounded-xl text-sm transition-opacity"></div>
 
   <script>
-    // ==== State & helpers ====
+    // ==== ⚙️ Asosiy O'zgaruvchilar va Yordamchi Funksiyalar ====
     const q = sel => document.querySelector(sel);
     const qa = sel => Array.from(document.querySelectorAll(sel));
     const money = v => new Intl.NumberFormat('uz-UZ').format(v);
     const when = ts => new Date(ts).toLocaleDateString('uz-UZ');
     const uid = () => Math.random().toString(36).slice(2);
-    const rand = arr => arr[Math.floor(Math.random()*arr.length)];
-
+    
+    // LocalStorage uchun kalitlar
     const LS_THEME = 'fs_theme';
     const LS_FAVS = 'fs_favs_v1';
 
+    // Kategoriyalar va Joylashuvlar
     const categories = ["Telefonlar","Kompyuterlar","Kiyim","Sport","Avto","Uy & Bog'","Boshqa"];
     const locations = ["Toshkent","Farg'ona","Namangan","Samarqand","Buxoro","Andijon","Xorazm"];
-    const titles = [
-      "iPhone 11 128GB","Gaming noutbuk","Velosiped","Adidas krossovka","Samsung televizor","Konditsioner",
-      "Mashina akkumulyatori","Qishki kurtka","Sony PlayStation 5","Canon fotoapparat","Kiyim shkafi",
-      "Stol-stul","Gilam","Toster","Changyutkich","Planshet","Monitor 27\"","Velotrenajyor","Shina 15\"","Smart soat"
-    ];
 
-    // Generate 50 random items with 3 images and masked phones
-    const listings = [];
-    for (let i=0;i<50;i++){
-      const base = Math.floor(Math.random()*8000000)+500000;
-      const phone = `9${Math.floor(0+Math.random()*9)} ${Math.floor(100+Math.random()*900)} ${Math.floor(10+Math.random()*90)} ${Math.floor(10+Math.random()*90)}`;
-      listings.push({
-        id: uid(),
-        title: rand(titles),
-        price: base,
-        category: rand(categories),
-        location: rand(locations),
-        desc: "Tovar haqida qisqacha tavsif. Holati yaxshi, real xaridorga kelishiladi.",
-        createdAt: Date.now()-Math.floor(Math.random()*1000*60*60*24*10),
+    // 🔄 MAHSULOTLAR RO'YXATI - FAQAT BU QISMNI O'ZGARTIRING 🔄
+    const MAHSULOTLAR_ROYXATI = [
+      {
+        id: 'iphone-15', 
+        title: "iPhone 15 Pro Max 256GB (Yangi)",
+        price: 18000000, 
+        category: "Telefonlar",
+        location: "Toshkent",
+        desc: "Yangi, pechat qutida. AQShdan keltirilgan. Rangi: Qora. Real xaridorga chegirma bor.",
+        createdAt: Date.now() - (1000 * 60 * 60 * 24 * 1), 
         images: [
-          `https://picsum.photos/seed/${i}-a/800/450`,
-          `https://picsum.photos/seed/${i}-b/800/450`,
-          `https://picsum.photos/seed/${i}-c/800/450`,
+          "https://i.ibb.co/L8y2wXz/iphone-15-1.jpg", 
+          "https://i.ibb.co/v4Kj2gH/iphone-15-2.jpg", 
+          "https://i.ibb.co/3qT7p1b/iphone-15-3.jpg", 
         ],
         phoneMasked: `+998 ** *** ** **`,
-        phoneReal: `+998 ${phone}`,
-      });
-    }
+        phoneReal: `+998 90 123 45 67`, 
+      },
+      {
+        id: 'gaming-pc',
+        title: "Gaming Desktop PC (RTX 4070)",
+        price: 15500000,
+        category: "Kompyuterlar",
+        location: "Samarqand",
+        desc: "Zo'r holatda, 6 oy ishlatilgan. Eng talabchan o'yinlarni ko'taradi. To'liq texnik xususiyatlar telefon orqali.",
+        createdAt: Date.now() - (1000 * 60 * 60 * 5), 
+        images: [
+          "https://i.ibb.co/8Y0v5L1/pc-1.jpg",
+          "https://i.ibb.co/9gPqT5w/pc-2.jpg",
+        ],
+        phoneMasked: `+998 ** *** ** **`,
+        phoneReal: `+998 99 987 65 43`,
+      },
+      {
+        id: 'sport-velosiped',
+        title: "Mountain Bike XT-500",
+        price: 4200000,
+        category: "Sport",
+        location: "Farg'ona",
+        desc: "Yaxshi holatda, 21 tezlik. Faqat shaharda ishlatilgan. Kask va qulf sovg'a qilinadi.",
+        createdAt: Date.now() - (1000 * 60 * 60 * 24 * 3), 
+        images: [
+          "https://i.ibb.co/y4pG0Zk/bike-1.jpg",
+          "https://i.ibb.co/4rJqH2x/bike-2.jpg",
+        ],
+        phoneMasked: `+998 ** *** ** **`,
+        phoneReal: `+998 91 555 11 22`,
+      },
+      {
+        id: uid(), title: "Yangi Qishki Kurtka (L Size)", price: 850000, category: "Kiyim", location: "Andijon", desc: "Sifatli material. Sovuqqa chidamli. Rangi to'q ko'k.", createdAt: Date.now() - (1000 * 60 * 60 * 24 * 7), 
+        images: ["https://i.ibb.co/Xz9tG1F/jacket-1.jpg"], phoneMasked: `+998 ** *** ** **`, phoneReal: `+998 94 333 44 55`,
+      },
+      {
+        id: uid(), title: "Konditsioner Artel 12.000 BTU", price: 3100000, category: "Uy & Bog'", location: "Buxoro", desc: "Bir yillik. Sovutish va isitish funksiyasi bor.", createdAt: Date.now() - (1000 * 60 * 60 * 24 * 2), 
+        images: ["https://i.ibb.co/v4Kj2gH/iphone-15-2.jpg"], phoneMasked: `+998 ** *** ** **`, phoneReal: `+998 93 222 33 44`,
+      },
+      // Qo'shimcha mahsulotlarni bu yerga kiriting
+    ];
+    // ⬆️ MAHSULOTLAR RO'YXATI tugadi ⬆️
+    
+    // Ma'lumotlarni tartiblash uchun nusxalash
+    let listings = [...MAHSULOTLAR_ROYXATI];
 
     const state = {
       search: '', category: '', location: '', sort: 'new', min: '', max: '', favOnly: false,
       page: 1, pageSize: 20, current: null, imgIdx: 0, favs: new Set(JSON.parse(localStorage.getItem(LS_FAVS)||'[]'))
     };
 
-    // ==== Theme ====
-    const savedTheme = localStorage.getItem(LS_THEME);
-    if (savedTheme === 'dark') document.documentElement.classList.add('dark');
+    // ==== Kun/Tun rejimi ====
+    function initializeTheme() {
+        const root = document.documentElement;
+        const savedTheme = localStorage.getItem(LS_THEME);
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            root.classList.add('dark');
+        } else {
+            root.classList.remove('dark');
+        }
+    }
+    initializeTheme(); 
+
     q('#darkToggle').addEventListener('click', ()=>{
-      document.documentElement.classList.toggle('dark');
-      localStorage.setItem(LS_THEME, document.documentElement.classList.contains('dark')?'dark':'light');
+      const root = document.documentElement;
+      root.classList.toggle('dark');
+      localStorage.setItem(LS_THEME, root.classList.contains('dark') ? 'dark' : 'light');
     });
 
-    // ==== Populate filter selects ====
+    // ==== Filtrlarni to'ldirish ====
     function fillSelect(sel, list){
       const el = q(sel);
       list.forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; el.appendChild(o); });
@@ -158,7 +207,7 @@
     fillSelect('#categoryFilter', categories);
     fillSelect('#locationFilter', locations);
 
-    // ==== Filtering/sorting/paging ====
+    // ==== Filtratsiya va saralash ====
     function applyFilters(){
       let arr = [...listings];
       const s = state.search.toLowerCase();
@@ -176,39 +225,51 @@
       return arr;
     }
 
+    // ==== Rendering (Elementlarni ekranga chiqarish) ====
     function render(){
       const list = applyFilters();
+      const start = (state.page - 1) * state.pageSize;
       const end = state.page * state.pageSize;
-      const slice = list.slice(0, end);
-      q('#cards').innerHTML = slice.map(cardTpl).join('');
+      const newSlice = list.slice(start, end);
+      
+      if (state.page === 1) {
+        q('#cards').innerHTML = newSlice.map(cardTpl).join('');
+      } else {
+        q('#cards').innerHTML += newSlice.map(cardTpl).join('');
+      }
+
       q('#emptyState').classList.toggle('hidden', list.length !== 0);
       q('#loadMore').classList.toggle('hidden', end >= list.length);
     }
 
-    // ==== Card & Modal ====
+    // ==== Card shabloni ====
     function favIcon(id){ return state.favs.has(id) ? '❤️' : '♡'; }
 
     function cardTpl(v){
       return `
         <article class="bg-white dark:bg-slate-800 rounded-2xl p-3 shadow hover:shadow-xl transition transform hover:-translate-y-1 grid gap-2">
           <div class="relative">
-            <img src="${v.images[0]}" alt="${v.title}" class="w-full aspect-video object-cover rounded-xl bg-slate-100"/>
-            <button data-id="${v.id}" class="favBtn absolute top-2 right-2 px-2 py-1 rounded-lg bg-white/90 dark:bg-slate-900/70">${favIcon(v.id)}</button>
+            <img src="${v.images[0]}" alt="${v.title}" loading="lazy" class="w-full aspect-video object-cover rounded-xl bg-slate-100"/>
+            <button data-id="${v.id}" class="favBtn absolute top-2 right-2 px-2 py-1 rounded-lg bg-white/90 dark:bg-slate-900/70 text-slate-700 dark:text-slate-300">${favIcon(v.id)}</button>
           </div>
-          <h3 class="font-semibold line-clamp-1">${v.title}</h3>
+          <h3 class="font-semibold line-clamp-1 text-slate-900 dark:text-white">${v.title}</h3>
           <div class="flex items-center justify-between mt-1">
-            <div class="text-lg font-bold">${money(v.price)} UZS</div>
+            <div class="text-lg font-bold text-sky-600 dark:text-sky-400">${money(v.price)} UZS</div>
             <span class="text-xs px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300">${v.category}</span>
           </div>
           <div class="text-xs text-slate-500 dark:text-slate-400">${v.location} • ${when(v.createdAt)}</div>
-          <button data-id="${v.id}" class="openBtn mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 py-2">Ko‘rish</button>
+          <button data-id="${v.id}" class="openBtn mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 py-2 text-slate-700 dark:text-slate-300">Ko‘rish</button>
         </article>`;
     }
 
+    // ==== Modal Funksiyalari ====
     function openModal(id){
       const v = listings.find(x=>x.id===id);
       if (!v) return;
-      state.current = v; state.imgIdx = 0;
+      state.current = v; 
+      state.imgIdx = 0;
+      
+      // Modal ma'lumotlarini to'ldirish
       q('#mImage').src = v.images[state.imgIdx];
       q('#mTitle').textContent = v.title;
       q('#mPrice').textContent = money(v.price)+" UZS";
@@ -218,30 +279,59 @@
       q('#revealPhone').dataset.phone = v.phoneReal;
       q('#revealPhone').dataset.mask = v.phoneMasked;
       q('#revealPhone').textContent = 'Telefonni ko‘rsatish';
+      
       q('#modal').classList.remove('hidden');
     }
 
+    // Kartochkalardagi harakatlar
     q('#cards').addEventListener('click', (e)=>{
-      const id = e.target?.dataset?.id;
-      if (!id && !e.target.classList.contains('openBtn') && !e.target.classList.contains('favBtn')) return;
-      if (e.target.classList.contains('openBtn')) return openModal(id);
-      if (e.target.classList.contains('favBtn')){
-        toggleFav(id); e.target.textContent = favIcon(id); showToast(state.favs.has(id)?'Sevimlilarga qo‘shildi':'Sevimlilardan olib tashlandi'); return;
+      const target = e.target.closest('[data-id]');
+      if (!target) return;
+      const id = target.dataset.id;
+
+      if (target.classList.contains('openBtn')) return openModal(id);
+      if (target.classList.contains('favBtn')){
+        toggleFav(id); 
+        qa(`.favBtn[data-id="${id}"]`).forEach(btn => btn.textContent = favIcon(id));
+        showToast(state.favs.has(id)?'Sevimlilarga qo‘shildi':'Sevimlilardan olib tashlandi'); 
+        if (state.favOnly) render(); 
+        return;
       }
     });
 
+    // Modal ichidagi harakatlar
     q('#closeModal').addEventListener('click', ()=> q('#modal').classList.add('hidden'));
-    q('#prevImg').addEventListener('click', ()=>{ if (!state.current) return; state.imgIdx=(state.imgIdx+state.current.images.length-1)%state.current.images.length; q('#mImage').src=state.current.images[state.imgIdx]; });
-    q('#nextImg').addEventListener('click', ()=>{ if (!state.current) return; state.imgIdx=(state.imgIdx+1)%state.current.images.length; q('#mImage').src=state.current.images[state.imgIdx]; });
-
-    // Fav in modal
-    q('#mFav').addEventListener('click', ()=>{ if (!state.current) return; toggleFav(state.current.id); q('#mFav').textContent=favIcon(state.current.id); showToast(state.favs.has(state.current.id)?'Sevimlilarga qo‘shildi':'Sevimlilardan olib tashlandi'); render(); });
-
-    // Reveal phone & share
-    q('#revealPhone').addEventListener('click', (e)=>{
-      const btn = e.currentTarget; btn.textContent = btn.dataset.phone; navigator.clipboard?.writeText(btn.dataset.phone).catch(()=>{});
-      showToast('Telefon raqam nusxalandi');
+    q('#prevImg').addEventListener('click', ()=>{ 
+        if (!state.current) return; 
+        state.imgIdx=(state.imgIdx+state.current.images.length-1)%state.current.images.length; 
+        q('#mImage').src=state.current.images[state.imgIdx]; 
     });
+    q('#nextImg').addEventListener('click', ()=>{ 
+        if (!state.current) return; 
+        state.imgIdx=(state.imgIdx+1)%state.current.images.length; 
+        q('#mImage').src=state.current.images[state.imgIdx]; 
+    });
+    q('#mFav').addEventListener('click', ()=>{ 
+      if (!state.current) return; 
+      const id = state.current.id;
+      toggleFav(id); 
+      q('#mFav').textContent=favIcon(id); 
+      qa(`.favBtn[data-id="${id}"]`).forEach(btn => btn.textContent = favIcon(id));
+      showToast(state.favs.has(id)?'Sevimlilarga qo‘shildi':'Sevimlilardan olib tashlandi'); 
+      render(); 
+    });
+
+    // Telefonni ko'rsatish va nusxalash
+    q('#revealPhone').addEventListener('click', (e)=>{
+      const btn = e.currentTarget; 
+      const realPhone = btn.dataset.phone;
+      btn.textContent = realPhone; 
+      navigator.clipboard?.writeText(realPhone)
+          .then(() => showToast('Telefon raqam nusxalandi: ' + realPhone))
+          .catch(err => console.error('Clipboard copy failed:', err));
+    });
+    
+    // Ulashish (Share)
     q('#shareBtn').addEventListener('click', async ()=>{
       if (!state.current) return;
       const text = `${state.current.title} — ${money(state.current.price)} UZS`;
@@ -249,47 +339,89 @@
       try {
         if (navigator.share) { await navigator.share({ title: 'Ferkashops', text, url }); }
         else { await navigator.clipboard.writeText(url); showToast('Havola nusxalandi'); }
-      } catch {}
+      } catch (e) {
+        showToast('Ulashish funksiyasi ishlamadi');
+      }
     });
 
-    // ==== Fav helpers ====
+    // ==== Tovar Joylash Funksiyasi (Telegram) ====
+    q('#postItemBtn').addEventListener('click', async ()=>{
+      const telegramUsername = 'shohcore';
+      const message = 'Assalomu alaykum men tavar joylamoqchiman';
+      const telegramURL = `https://t.me/${telegramUsername}?text=${encodeURIComponent(message)}`;
+      
+      try {
+        await navigator.clipboard.writeText(message);
+        showToast('Matn nusxalandi va Telegram ochilmoqda...');
+        setTimeout(() => {
+            window.open(telegramURL, '_blank');
+        }, 500); 
+      } catch (err) {
+        showToast("Matnni nusxalashda xatolik yuz berdi. Iltimos, Telegramni qo'lda oching.");
+        setTimeout(() => {
+            window.open(telegramURL, '_blank');
+        }, 500);
+      }
+    });
+
+    // ==== Sevimli (Fav) helpers ====
     function toggleFav(id){
       if (state.favs.has(id)) state.favs.delete(id); else state.favs.add(id);
       localStorage.setItem(LS_FAVS, JSON.stringify([...state.favs]));
     }
 
-    // ==== Toast ====
+    // ==== Toast Xabarnomasi ====
     function showToast(msg){
-      const t = q('#toast'); t.textContent = msg; t.classList.remove('hidden');
+      const t = q('#toast'); 
+      t.textContent = msg; 
+      t.classList.remove('hidden');
       clearTimeout(showToast._t);
-      showToast._t = setTimeout(()=> t.classList.add('hidden'), 1600);
+      showToast._t = setTimeout(()=> t.classList.add('hidden'), 2000);
     }
 
-    // ==== Filter events ====
-    q('#search').addEventListener('input', e=>{ state.search=e.target.value; state.page=1; render(); });
-    q('#categoryFilter').addEventListener('change', e=>{ state.category=e.target.value; state.page=1; render(); });
-    q('#locationFilter').addEventListener('change', e=>{ state.location=e.target.value; state.page=1; render(); });
-    q('#sort').addEventListener('change', e=>{ state.sort=e.target.value; state.page=1; render(); });
-    q('#minPrice').addEventListener('input', e=>{ state.min=e.target.value; state.page=1; render(); });
-    q('#maxPrice').addEventListener('input', e=>{ state.max=e.target.value; state.page=1; render(); });
-    q('#favOnly').addEventListener('change', e=>{ state.favOnly=e.target.checked; state.page=1; render(); });
+    // ==== Filter Eventlar (Harakatlar) ====
+    function updateFilterState(e, prop){
+        state[prop] = e.target.value; 
+        state.page = 1; 
+        render();
+    }
+    q('#search').addEventListener('input', e => updateFilterState(e, 'search'));
+    q('#categoryFilter').addEventListener('change', e => updateFilterState(e, 'category'));
+    q('#locationFilter').addEventListener('change', e => updateFilterState(e, 'location'));
+    q('#sort').addEventListener('change', e => updateFilterState(e, 'sort'));
+    q('#minPrice').addEventListener('input', e => updateFilterState(e, 'min'));
+    q('#maxPrice').addEventListener('input', e => updateFilterState(e, 'max'));
+    
+    q('#favOnly').addEventListener('change', e=>{ 
+        state.favOnly=e.target.checked; 
+        state.page=1; 
+        render(); 
+    });
 
-    // Paging
-    q('#loadMore').addEventListener('click', ()=>{ state.page++; render(); });
-    window.addEventListener('scroll', ()=>{ // small infinite scroll on mobile
-      if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 200) {
+    // Paging va Infinite Scroll
+    q('#loadMore').addEventListener('click', ()=>{ 
+        state.page++; 
+        render(); 
+    });
+    
+    window.addEventListener('scroll', ()=>{ 
+      if (q('#loadMore').classList.contains('hidden')) return; 
+      if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) { 
         const list = applyFilters();
-        if (state.page * state.pageSize < list.length){ state.page++; render(); }
+        if (state.page * state.pageSize < list.length){ 
+          state.page++; 
+          render(); 
+        }
       }
     });
 
-    // Open from hash (share)
+    // URL'dagi hash orqali modalni ochish (ulashish uchun)
     window.addEventListener('load', ()=>{
       const id = location.hash.replace('#','');
       if (id) openModal(id);
     });
 
-    // Initial render
+    // Boshlang'ich yuklash
     render();
   </script>
 </body>
