@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ferkaveka Galaxy Portfoliyo - 3D</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+    
+    <style>
+        /* =================================================== */
+        /* GLOBAL STYLES & THREE.JS SETUP */
+        /* =================================================== */
+        :root {
+            --primary-color: #00bcd4; /* Sian (Turkuaz) */
+            --secondary-color: #ff4081; /* Pushti (Aksent) */
+            --bg-dark: #0a0a20;
+            --glass-bg: rgba(255, 255, 255, 0.08); /* Yarim shaffof orqa fon */
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-dark);
+            color: #fff;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* 3D FON (Three.js Sahna) */
+        #threejs-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(180deg, #0a0a20 0%, #1a0a30 100%);
+        }
+
+        /* Kontent Qatlami (3D ustida joylashadi) */
+        #content-wrap {
+            position: relative;
+            z-index: 1;
+            padding: 0 20px 50px 20px;
+        }
+
+        /* =================================================== */
+        /* TYPOGRAPHY & HEADER */
+        /* =================================================== */
+        h1 {
+            text-align: center;
+            padding: 80px 10px 40px 10px;
+            font-size: clamp(2.5em, 5vw, 4em);
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--primary-color);
+            text-shadow: 0 0 20px rgba(0, 188, 212, 0.5);
+        }
+        
+        h1 span {
+            color: var(--secondary-color);
+        }
+
+        /* =================================================== */
+        /* VIDEO GALLERY & CARDS */
+        /* =================================================== */
+        .video-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px; 
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        .video-card {
+            background: var(--glass-bg); /* Glassmorphism/Yarim shaffof fon */
+            backdrop-filter: blur(10px); 
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.4s;
+            cursor: pointer;
+        }
+
+        .video-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5), 0 0 40px var(--primary-color);
+        }
+
+        .video-player {
+            width: 100%;
+            aspect-ratio: 9 / 16; /* Vertikal videoga mos */
+            display: block;
+            background-color: #000;
+        }
+
+        .card-content {
+            padding: 20px;
+            text-align: left;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .card-content h3 {
+            margin: 0;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .card-content p {
+            font-size: 0.85em;
+            color: #b0c4de;
+            margin-top: 5px;
+        }
+
+        /* =================================================== */
+        /* MOBILE OPTIMIZATION */
+        /* =================================================== */
+        @media (max-width: 768px) {
+            h1 {
+                padding: 60px 10px 30px 10px;
+            }
+            .video-gallery {
+                grid-template-columns: 1fr; 
+                gap: 20px;
+            }
+        }
+        /* Tugma Konteyneri */
+.load-more-container {
+    text-align: center;
+    margin: 50px auto;
+    position: relative; /* 3D elementlar uchun asos */
+    width: 300px; /* Tugma uchun kenglik */
+    height: 100px; /* Tugma uchun balandlik */
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+/* 3D Tugma uchun Konteyner */
+#threejs-button-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2; /* Tegning ustida turishi uchun */
+}
+
+/* Tugma Yorlig'i (3D tugma ustida) */
+#button-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 3;
+    font-size: 1.2em;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--primary-color);
+    text-shadow: 0 0 10px rgba(0, 188, 212, 0.8);
+    pointer-events: none; /* Sichqoncha bosilishini 3D meshga o'tkazadi */
+}
+    </style>
+</head>
+<body>
+
+    <div id="threejs-container"></div>
+
+    <div id="content-wrap">
+        <h1>FERKAVEKA <span>GALAXY 7</span></h1>
+        
+        <div class="video-gallery">
+            
+            <div class="video-card">
+                <video class="video-player" controls poster="thumbnails/video1_poster.jpg" loading="lazy" preload="metadata">
+                    <source src="IMG_2478.MOV" type="video/mp4">
+                    Brauzer video tagini qo'llab-quvvatlamaydi.
+                </video>
+                <div class="card-content">
+                    <h3>😱</h3>
+                    <p>#ferkaveka</p>
+                </div>
+            </div>
+
+            <div class="video-card">
+                <video class="video-player" controls poster="thumbnails/video2_poster.jpg" loading="lazy" preload="metadata">
+                    <source src="IMG_2478.MOV" type="video/mp4">
+                </video>
+                <div class="card-content">
+                    <h3>😱</h3>
+                    <p>#ferkaveka</p>
+                </div>
+            </div>
+            
+            <div class="video-card">
+                <video class="video-player" controls poster="thumbnails/video3_poster.jpg" loading="lazy" preload="metadata">
+                    <source src="IMG_2478.MOV" type="video/mp4">
+                </video>
+                <div class="card-content">
+                    <h3>😱</h3>
+                    <p>#ferkaveka</p>
+                </div>
+            </div>
+
+            <div class="video-card">
+                <video class="video-player" controls poster="thumbnails/video4_poster.jpg" loading="lazy" preload="metadata">
+                    <source src="IMG_2478.MOV" type="video/mp4">
+                </video>
+                <div class="card-content">
+                    <h3>😱</h3>
+                    <p>#ferkaveka</p>
+                </div>
+            </div>
+            
+            <div class="video-card">
+                <video class="video-player" controls poster="thumbnails/video5_poster.jpg" loading="lazy" preload="metadata">
+                    <source src="IMG_2478.MOV" type="video/mp4">
+                </video>
+                <div class="card-content">
+                    <h3>😱</h3>
+                    <p>#ferkaveka</p>
+                </div>
+            </div>
+            
+            <div class="video-card">
+                <video class="video-player" controls poster="thumbnails/video6_poster.jpg" loading="lazy" preload="metadata">
+                    <source src="IMG_2478.MOV" type="video/mp4">
+                </video>
+                <div class="card-content">
+                    <h3>😱</h3>
+                    <p>#ferkaveka</p>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+<div class="load-more-container">
+    <div id="threejs-button-container"></div>
+    <a href="videobulim8.html"><p id="button-label">YANA KO'PROQ VIDEOLAR</p></a>
+</div>
+
+
+    <script>
+        // ===================================================
+        // THREE.JS GALAXY ANIMATION (Tezlik Optimallashtirilgan)
+        // ===================================================
+        const container = document.getElementById('threejs-container');
+        const scene = new THREE.Scene();
+        // Sahna hajmini moslash
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        container.appendChild(renderer.domElement);
+        // Tezlikni optimallashtirish: Maksimal pixel ratio 1.5 ga cheklangan
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)); 
+
+        camera.position.z = 5;
+
+        // Koinotdagi Yulduzlarni Yaratish
+        function createStars() {
+            const starGeometry = new THREE.BufferGeometry();
+            const starVertices = [];
+            const numStars = 10000; // Optimal son
+
+            for (let i = 0; i < numStars; i++) {
+                const x = THREE.MathUtils.randFloatSpread(400); 
+                const y = THREE.MathUtils.randFloatSpread(400);
+                const z = THREE.MathUtils.randFloatSpread(400);
+                starVertices.push(x, y, z);
+            }
+
+            starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+
+            const starMaterial = new THREE.PointsMaterial({
+                color: 0xffffff,
+                size: 0.5,
+                sizeAttenuation: true,
+                transparent: true,
+                opacity: 0.7
+            });
+
+            const stars = new THREE.Points(starGeometry, starMaterial);
+            scene.add(stars);
+            return stars;
+        }
+
+        const stars = createStars();
+
+        // RENDER LOOP (Animatsiya tsikli)
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Kamerani sekin harakatlantirish
+            camera.position.x += 0.001; 
+            camera.position.y += 0.0005;
+
+            // Yulduzlar aylanishi
+            stars.rotation.y += 0.0005;
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Oynani o'lchami o'zgarganda moslashish
+        window.addEventListener('resize', () => {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        });
+        
+        // ===================================================
+        // GSAP SCROLL ANIMATION (Zamonaviy Kirish Effekti)
+        // ===================================================
+        // Sahifa yuklanganda kartochkalarni ketma-ket chiqarish
+        gsap.from(".video-card", {
+            duration: 1,
+            y: 50, 
+            opacity: 0,
+            stagger: 0.1, 
+            ease: "power2.out"
+        });
+        
+        // Sarlavhani animatsiya qilish
+        gsap.from("h1", {
+            duration: 1.5,
+            opacity: 0,
+            scale: 0.8,
+            ease: "elastic.out(1, 0.3)",
+            delay: 0.5
+        });
+
+
+        // ===================================================
+// THREE.JS INTERACTIVE BUTTON
+// ===================================================
+const buttonContainer = document.getElementById('threejs-button-container');
+const buttonWidth = buttonContainer.clientWidth;
+const buttonHeight = buttonContainer.clientHeight;
+
+// Tugma uchun alohida sahna va kamera
+const buttonScene = new THREE.Scene();
+const buttonCamera = new THREE.PerspectiveCamera(75, buttonWidth / buttonHeight, 0.1, 1000);
+buttonCamera.position.z = 1.5;
+
+// Tugma rendereri
+const buttonRenderer = new THREE.WebGLRenderer({ 
+    alpha: true, // Shaffof fon uchun
+    antialias: true 
+});
+buttonRenderer.setSize(buttonWidth, buttonHeight);
+buttonRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+buttonContainer.appendChild(buttonRenderer.domElement);
+
+// Tugma uchun Mesh (Obyekt)
+const buttonGeometry = new THREE.BoxGeometry(2.5, 0.8, 0.2); // Yassi to'rtburchak
+const initialButtonColor = new THREE.Color(0x00bcd4); // Sian rang
+const hoverButtonColor = new THREE.Color(0xff4081); // Pushti rang
+const buttonMaterial = new THREE.MeshLambertMaterial({ 
+    color: initialButtonColor, 
+    transparent: true, 
+    opacity: 0.8 
+});
+const buttonMesh = new THREE.Mesh(buttonGeometry, buttonMaterial);
+buttonScene.add(buttonMesh);
+
+// Yorug'lik qo'shish (Mesh ustida)
+const buttonLight = new THREE.PointLight(0xffffff, 1, 100);
+buttonLight.position.set(0, 0, 5);
+buttonScene.add(buttonLight);
+
+// Sichqoncha hodisalari uchun Raycaster
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+function onPointerMove(event) {
+    // Sichqoncha koordinatalarini normallashtirish
+    mouse.x = ( (event.clientX - buttonContainer.getBoundingClientRect().left) / buttonWidth ) * 2 - 1;
+    mouse.y = - ( (event.clientY - buttonContainer.getBoundingClientRect().top) / buttonHeight ) * 2 + 1;
+}
+buttonContainer.addEventListener('mousemove', onPointerMove);
+
+// Hover (ustiga borish) funksiyasi
+let isHovering = false;
+function checkIntersection() {
+    raycaster.setFromCamera(mouse, buttonCamera);
+    const intersects = raycaster.intersectObjects(buttonScene.children);
+
+    if (intersects.length > 0) {
+        if (!isHovering) {
+            // Hover bo'lganda rangni GSAP yordamida o'zgartirish
+            gsap.to(buttonMesh.material.color, { r: hoverButtonColor.r, g: hoverButtonColor.g, b: hoverButtonColor.b, duration: 0.3 });
+            gsap.to(buttonMesh.scale, { x: 1.05, y: 1.05, z: 1.05, duration: 0.3 }); // Kichik kattalashish
+            isHovering = true;
+        }
+    } else {
+        if (isHovering) {
+            // Hover tugaganda rangni qaytarish
+            gsap.to(buttonMesh.material.color, { r: initialButtonColor.r, g: initialButtonColor.g, b: initialButtonColor.b, duration: 0.3 });
+            gsap.to(buttonMesh.scale, { x: 1, y: 1, z: 1, duration: 0.3 });
+            isHovering = false;
+        }
+    }
+}
+
+// Tugmani bosish funksiyasi
+buttonContainer.addEventListener('click', () => {
+    if (isHovering) {
+        // Bu yerda siz keyingi videolarni yuklash yoki sahifani o'zgartirish funksiyasini yozasiz
+        alert("YANA VIDEOLAR YUKLANMOQDA... (Keyingi Sahifa Funksiyasi Shu Yerda Ishlaydi!)");
+        
+        // Bosish animatsiyasi
+        gsap.fromTo(buttonMesh.position, { z: 0.1 }, { z: 0, duration: 0.1, ease: "power2.inOut" });
+    }
+});
+
+
+// Tugma animatsiya tsikli
+function animateButton() {
+    requestAnimationFrame(animateButton);
+    
+    // Tugmani yengil aylantirish
+    buttonMesh.rotation.y += 0.005;
+    
+    checkIntersection(); // Hoverni tekshirish
+    buttonRenderer.render(buttonScene, buttonCamera);
+}
+animateButton();
+
+// ... (Mavjud animate() funksiyasidan oldin yoki keyin joylashtiring) ...
+    </script>
+</body>
+</html>
