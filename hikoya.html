@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ferkaveka – Qiziqarli Hikmatli Hikoyalar</title>
+    <style>
+        /* ========== GLOBAL ========== */
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Merriweather:wght@700&display=swap');
+
+        :root {
+            --primary: #3f51b5;
+            --accent: #ff9800;
+            --bg: #f4f5f7;
+            --text-dark: #212121;
+            --text-light: #616161;
+            --card: #ffffff;
+            --shadow: 0 4px 20px rgba(0,0,0,0.08);
+            --shadow-hover: 0 12px 30px rgba(0,0,0,0.15);
+            --trans: 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: var(--bg);
+            color: var(--text-dark);
+            line-height: 1.65;
+            margin: 0;
+            padding: 40px 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: min(90%, 1300px);
+            margin-inline: auto;
+        }
+
+        /* ========== HEADER ========== */
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .header h1 {
+            font-family: 'Merriweather', serif;
+            font-size: clamp(2rem, 6vw, 3.2rem);
+            color: var(--primary);
+            margin: 0;
+            position: relative;
+            padding-bottom: 12px;
+        }
+
+        .header h1::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 3px;
+            background: var(--accent);
+            margin: 10px auto 0;
+            border-radius: 2px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            max-width: 700px;
+            margin: 16px auto 0;
+        }
+
+        /* ========== GRID ========== */
+        .stories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 32px;
+        }
+
+        /* ========== CARD ========== */
+        .story-card {
+            background: var(--card);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            transition: transform 0.35s, box-shadow 0.35s, opacity 0.35s;
+            overflow: hidden;
+            cursor: pointer;
+            border-left: 4px solid var(--primary);
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .story-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .story-image {
+            height: 200px;
+            overflow: hidden;
+        }
+
+        .story-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .story-card:hover .story-image img {
+            transform: scale(1.1);
+        }
+
+        .story-content {
+            padding: 22px;
+        }
+
+        .story-content h3 {
+            font-family: 'Merriweather', serif;
+            font-size: 1.35rem;
+            margin: 0 0 10px;
+            color: var(--text-dark);
+        }
+
+        .story-content p {
+            font-size: 0.95rem;
+            color: var(--text-light);
+            margin: 0;
+        }
+
+        /* ========== MODAL ========== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.88);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .modal-content {
+            background: var(--card);
+            width: min(95%, 900px);
+            max-height: 90vh;
+            border-radius: 16px;
+            padding: 36px;
+            position: relative;
+            transform: scale(0.92);
+            transition: transform 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-overlay.open .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-content h2 {
+            font-family: 'Merriweather', serif;
+            color: var(--primary);
+            font-size: clamp(1.8rem, 4vw, 2.4rem);
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        #modal-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 26px;
+            display: block;
+        }
+
+        #modal-text {
+            font-size: 1.05rem;
+            line-height: 1.8;
+            color: var(--text-dark);
+        }
+
+        #modal-text p {
+            margin-bottom: 18px;
+            text-align: justify;
+        }
+
+        #modal-text strong {
+            color: var(--primary);
+        }
+
+        .close-button {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 1.8rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .close-button:hover {
+            background: #e68a00;
+            transform: rotate(90deg);
+            transition: all 0.3s ease;
+        }
+
+        /* ========== MOBILE ========== */
+        @media (max-width: 768px) {
+            body { padding: 24px 0; }
+            .stories-grid { gap: 24px; }
+            .story-content { padding: 18px; }
+            #modal-image { height: 220px; }
+            .modal-content { padding: 24px 20px; }
+        }
+    </style>
+</head>
+<body>
+    <header class="container header">
+        <h1>Hikmatga To'la Voqealar</h1>
+        <p>Hayotdan olingan 20 ta qisqa, mazali va nozik hikoya — har biri sizga yangi ko'z bilan qarashni o'rgatadi.</p>
+    </header>
+
+    <main class="container">
+        <section class="stories-grid" id="stories-grid"></section>
+    </main>
+
+    <div class="modal-overlay" id="story-modal">
+        <div class="modal-content">
+            <button class="close-button" title="Yopish (ESC)">&times;</button>
+            <h2 id="modal-title"></h2>
+            <img id="modal-image" alt="" />
+            <div id="modal-text"></div>
+        </div>
+    </div>
+
+    <script>
+        const storiesData = [
+            { id: 1, title: "Qarorning Kuchi", short: "Ichki ovozga quloq solgan odamning g'alabasi.", img: "https://picsum.photos/id/111/400/200", content: "<p>Bir kishi ham ishonmagan, lekin u o'z ichidagi “yo'l bormi?” degan savolga “bor!” deb javob berdi. Aytish kerakki, o'sha daqiqadan boshlab yo'l ham haqiqatan paydo bo'ldi.</p><p><strong>Komex:</strong> Eng zo'r yo'llar — oyoqlaringiz ostida emas, qalbingizda boshlanadi.</p>" },
+            { id: 2, title: "“Yo'q” deyish San'ati", short: "Keraksiz narsalarga “yo'q” — keraklilarga “ha”!", img: "https://picsum.photos/id/222/400/200", content: "<p>U barcha imkoniyatlarga “ha” deganidan keyin — hech narsaga erisha olmadi. Shundan keyin u “yo'q”ni o'rgandi. Va ajoyib: bir “yo'q”dan so'ng — yuzta “ha” keldi.</p><p><strong>Komex:</strong> “Yo'q” — bu yo'qotish emas, balki tanlashdir.</p>" },
+            { id: 3, title: "Xato — Bepul Dars", short: "Xatolar bepul dars beradi, lekin kulolmasang — bekor qilasiz.", img: "https://picsum.photos/id/333/400/200", content: "<p>U xato qildi. Juda katta xato. Lekin uni qayta-qayta kulib o'tdi — natijada, xato unga eng yaxshi do'st bo'lib qoldi.</p><p><strong>Komex:</strong> Xatoni do'sting qil — u senga bepul dars beradi.</p>" },
+            { id: 4, title: "Umid — Barcha Soatlarning Quvvati", short: "Qorong'ulikda ham soat ishlashini xohlaysizmi? Umidni yo'qotmang.", img: "https://picsum.photos/id/444/400/200", content: "<p>U shunday qorong'ulikda qoldiki, hatto soyalar ham yo'qolgan edi. Lekin yuragidagi kichkina chiroq — yonib turgan edi. Shu chiroq yetarli bo'ldi.</p><p><strong>Komex:</strong> Qorong'ulikda ham yurishingiz uchun — bitta chiroq yetarli.</p>" },
+            { id: 5, title: "G'oya — Nega Katta Bo'lishi Kerak?", short: "Dunyoni o'zgartirgan g'oya — kichkina guldan boshlangan.", img: "https://picsum.photos/id/555/400/200", content: "<p>Uning g'oyasi shunchalik oddiy ediki, hatto bola ham tushunardi. Aynan shu oddiylik — uni kuchli qildi.</p><p><strong>Komex:</strong> Aql bovar qilmasa ham — oddiy g'oyalar kuchliroq.</p>" },
+            { id: 6, title: "Besh Yil — Faqat 1825 Kun", short: "Har bir kun — kelajakning g'ishtidir.", img: "https://picsum.photos/id/666/400/200", content: "<p>U besh yil reja tuzdi. Lekin har kuni — faqat bugungi ishni bajardi. Besh yildan keyin — reja emas, natija qo'lida edi.</p><p><strong>Komex:</strong> Reja kerak, lekin natija — faqat bugun yasaladi.</p>" },
+            { id: 7, title: "Yolg'izlik — Suhbatdosh Emas, Hamyon", short: "Yolg'izlikda topilgan g'oyalar — jamoada tug'ilmasa kerak.", img: "https://picsum.photos/id/777/400/200", content: "<p>U yolg'izlikdan qo'rqqan, lekin bir kun tushundi: yolg'izlik — g'oyalarni eshitish uchun kerak bo'lgan shovqinsiz xona.</p><p><strong>Komex:</strong> Yolg'izlik — bu sizning ichki shovqinningizni tinglash vaqtidir.</p>" },
+            { id: 8, title: "Ustoz — Hayotning Kalit So'zi", short: "Bir so'z — butun yo'lni o'zgartiradi.", img: "https://picsum.photos/id/888/400/200", content: "<p>Ustoz faqat bir marta so'z aytdi: “Siz qila olmaysiz” deganlarga ishonmang. Shu so'z — butun hayotini o'zgartirdi.</p><p><strong>Komex:</strong> To'g'ri so'z — quloqqa emas, yurakka tushadi.</p>" },
+            { id: 9, title: "Boylik — Yurakdagi Qizg'inlik", short: "Pul — qo'lda, baxt — yurakda.", img: "https://picsum.photos/id/999/400/200", content: "<p>U milliarder bo'ldi, lekin baxtli emas edi. Keyin bir kichkina bolaning kulgi — unga boylikning haqiqiy ma'nosini o'rgatdi.</p><p><strong>Komex:</strong> Pul hisoblanadi, lekin baxt — hisoblanmaydi.</p>" },
+            { id: 10, title: "Bir Kunning Qahramonligi", short: "Qahramon — doim qilich bilan emas, balki yurak bilan keladi.", img: "https://picsum.photos/id/1000/400/200", content: "<p>U qilich ko'tarmadi, lekin bir kambag'al bolaga non berdi. Shu kichkina harakat — butun mahalla uchun ertaga nur sifatida qoldi.</p><p><strong>Komex:</strong> Qahramonlik — kuch emas, mehribonlikdir.</p>" },
+            { id: 11, title: "11-Hikoya: Bo'sh Joy", short: "Bu joy — sizning hikoyangiz uchun.", img: "https://picsum.photos/id/1001/400/200", content: "<p>Siz ham o'zingizning hikmatli hikoyangizni yozishingiz mumkin. Chunki hayot — hamma uchun komexlar to'plami.</p><p><strong>Komex:</strong> Siz ham hikoyaning qahramonisiz.</p>" },
+            { id: 12, title: "Ota-onaning So'zi — Dunyoning Asosi", short: "Ota-onaning so'zi — bolaga beriladigan eng arzon, lekin eng qimmatli sovg'a.", img: "https://picsum.photos/id/1002/400/200", content: "<p>U ota-onasining so'zini esladi: “Odam bo'ling”. Shu so'z — qiyinchiliklarda ham adolat yo'lini ko'rsatdi.</p><p><strong>Komex:</strong> Eng arzon so'z — eng qimmatli yo'l ko'rsatuvchi.</p>" },
+            { id: 13, title: "Boshqacha Yo'l — Eng To'g'ri Yo'l", short: "Barcha yo'llar Rim ga boradi, lekin sizning yo'lingiz — yulduzga.", img: "https://picsum.photos/id/1003/400/200", content: "<p>U barchadan farqli yo'l tutdi. Dastlab kulishdi, keyin hayratda qoldi, nihoyat — uni kuzatish boshladi jamoat.</p><p><strong>Komex:</strong> Agar yo'lingiz boshqalardan farq qilsa — ehtimol, u to'g'ri yo'l.</p>" },
+            { id: 14, title: "Tabiat — Hayotning Darsi", short: "Daraxt ham — ildizini chuqur tushirgandan keyin gullaydi.", img: "https://picsum.photos/id/1004/400/200", content: "<p>U tabiatdan ilhom oldi: daraxt ham, daryo ham, tog' ham — hech qachon shoshmaydi. Lekin hech qachon to'xtamaydi ham.</p><p><strong>Komex:</strong> Tabiat — eng sabrli va eng muntazam o'qituvchi.</p>" },
+            { id: 15, title: "Mantiq — Lekin Yurak Ham Aytadi", short: "Eng aqlli javob — yurakdan keladi.", img: "https://picsum.photos/id/1005/400/200", content: "<p>U mantiqqa qarab javob berdi, lekin natija — yurakdan keldi. Chunki ba'zi savollar — aql emas, hissiyot orqali hal qilinadi.</p><p><strong>Komex:</strong> Aql — hisob-kitob qiladi, yurak — ma'noga yetkazadi.</p>" },
+            { id: 16, title: "Matonat — G'alaba Tayyorgarligi", short: "G'alaba — matonatning nihoyat so'zini aytishidir.", img: "https://picsum.photos/id/1006/400/200", content: "<p>U har kuni bir xil ishni bajardi. Dostlari zerikdi, lekin u — natijani kutdi. Va natija — haqiqatan ham keldi.</p><p><strong>Komex:</strong> Matonat — g'alabaning so'nggi bo'g'ini.</p>" },
+            { id: 17, title: "Ijobiylik — Sizning Kuchingiz", short: "Qorong'ulik ham quyoshni to'xtata olmaydi.", img: "https://picsum.photos/id/1008/400/200", content: "<p>U barcha qorong'ulikda ham quyoshni his qildi. Chunki ijobiylik — tashqi dunyo emas, ichki dunyo.</p><p><strong>Komex:</strong> Quyosh tashqarida emas — ichingizda.</p>" },
+            { id: 18, title: "Oila — Hayotning Asosi", short: "Oila — hayotning birinchi maktabi.", img: "https://picsum.photos/id/1009/400/200", content: "<p>U katta muvaffaqiyatga erishdi, lekin eng katta baxti — oilasidagi kichkina sohbatlarda edi.</p><p><strong>Komex:</strong> Dunyoni o'zgartirishdan oldin — oilangizni baxtli qiling.</p>" },
+            { id: 19, title: "Tasodif — Tog'ri Vaqtdagi Imkon", short: "Tasodif — tayyorgarlik bilan uchrashganda sodir bo'ladi.", img: "https://picsum.photos/id/1010/400/200", content: "<p>U tasodifiy uchrashuvda aytgan so'zi — butun taqdirini o'zgartirdi. Lekin u shunchalik tayyorgarlik ko'rgan ediki, tasodif ham uni tanladi.</p><p><strong>Komex:</strong> Tasodif — tayyorgarlikni sevadi.</p>" },
+            { id: 20, title: "Erkinlik — Tanlov Qilish Huquqi", short: "Erkinlik — fikr bildirish, sevish va xato qilish huquqidir.", img: "https://picsum.photos/id/1011/400/200", content: "<p>U erkin bo'lish uchun ko'p narsani tark etdi. Lekin oxirida tushundi: erkinlik — narsalarni emas, fikrlarni tanlashdir.</p><p><strong>Komex:</strong> Haqiqiy erkinlik — ichki dunyoning hukmdorligidir.</p>" }
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const grid = document.getElementById('stories-grid');
+            const modal = document.getElementById('story-modal');
+            const closeBtn = modal.querySelector('.close-button');
+            const titleEl = document.getElementById('modal-title');
+            const imgEl = document.getElementById('modal-image');
+            const textEl = document.getElementById('modal-text');
+
+            storiesData.forEach((story, idx) => {
+                const card = document.createElement('article');
+                card.className = 'story-card';
+                card.innerHTML = `
+                    <div class="story-image">
+                        <img src="${story.img}" alt="${story.title}" loading="lazy">
+                    </div>
+                    <div class="story-content">
+                        <h3>${story.title}</h3>
+                        <p>${story.short}</p>
+                    </div>
+                `;
+                card.dataset.id = story.id;
+
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, idx * 70);
+
+                card.addEventListener('click', () => {
+                    titleEl.textContent = story.title;
+                    imgEl.src = story.img;
+                    imgEl.alt = story.title;
+                    textEl.innerHTML = story.content;
+                    modal.classList.add('open');
+                    document.body.style.overflow = 'hidden';
+                });
+
+                grid.appendChild(card);
+            });
+
+            const closeModal = () => {
+                modal.classList.remove('open');
+                document.body.style.overflow = '';
+            };
+
+            closeBtn.addEventListener('click', closeModal);
+            modal.addEventListener('click', e => {
+                if (e.target === modal) closeModal();
+            });
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape' && modal.classList.contains('open')) closeModal();
+            });
+        });
+    </script>
+</body>
+</html>
