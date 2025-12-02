@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI Super Analyzer: Yosh, Jins va Emotsiya</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ------------------------- Global & Layout ------------------------- */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Orbitron', sans-serif; user-select: none; }
+        body {
+            background: #000033; /* To'q ko'k-qora fon */
+            color: #00ff7f; /* Neon yashil rang */
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; text-shadow: 0 0 5px rgba(0, 255, 127, 0.5); overflow: hidden;
+        }
+        .main-container {
+            width: 95%; max-width: 600px; background: rgba(0, 0, 0, 0.8); border-radius: 15px;
+            box-shadow: 0 0 30px rgba(0, 255, 127, 0.6), inset 0 0 10px rgba(0, 255, 127, 0.3);
+            padding: 20px; text-align: center;
+        }
+        h1 { font-size: 24px; margin-bottom: 15px; color: #00ff7f; }
+
+        /* Video & Canvas Layer */
+        .scanner-area {
+            position: relative; width: 100%; margin: 0 auto; border: 3px solid #00ff7f;
+            border-radius: 10px; box-shadow: 0 0 15px #00ff7f; background: #000;
+        }
+        .canvas-wrapper { position: relative; width: 100%; padding-top: 75%; }
+        
+        #videoElement, #canvasElement {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: scaleX(-1);
+        }
+        #videoElement { display: none; }
+        #canvasElement { z-index: 10; }
+
+        /* UI Elements */
+        #statusDisplay { margin-top: 15px; font-size: 18px; min-height: 25px; color: #fff; }
+        #ageDisplay { margin-top: 10px; font-size: 24px; font-weight: bold; color: #ffeb3b; /* Sariq */ min-height: 30px; }
+        #emotionDisplay { margin-top: 5px; font-size: 20px; font-weight: bold; color: #ff4081; /* Pushti */ min-height: 25px; }
+
+        #startBtn {
+            padding: 10px 20px; font-size: 16px; background-color: #ff4081; color: white;
+            border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.3s;
+            margin-top: 20px; font-weight: bold;
+        }
+        #startBtn:hover { background-color: #cc3366; }
+        .loading-text { color: #f1c40f; animation: blink 1s infinite; }
+        @media (max-width: 768px) {
+            .main-container { padding: 15px; border-radius: 10px; }
+            h1 { font-size: 20px; }
+            #ageDisplay, #emotionDisplay { font-size: 18px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <h1>AI Super Analyzer 🧠</h1>
+        <p>Yoshingiz, jinsingiz va kayfiyatingizni real vaqtda aniqlaymiz.</p>
+
+        <div class="scanner-area">
+            <div class="canvas-wrapper">
+                <video id="videoElement" autoplay playsinline></video> 
+                <canvas id="canvasElement"></canvas>
+            </div>
+        </div>
+        
+        <button id="startBtn">AI Modelini Yuklash va Ishga Tushirish</button>
+        
+        <div id="statusDisplay">Model yuklanishini kuting...</div>
+        <div id="ageDisplay">...</div>
+        <div id="emotionDisplay">...</div>
+        
+        <p style="font-size: 11px; margin-top: 15px; color: #7f8c8d;">Texnologiya: face-api.js (Yuz, Yosh, Jins, Emotsiya)</p>
+    </div>
+
+    
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    
+    <script>
+        // ------------------------------------------------------------------
+        // -------------------------- JAVASCRIPT & FACE-API.JS LOGIC ------------------------
+        // ------------------------------------------------------------------
+        const videoElement = document.getElementById('videoElement');
+        const canvasElement = document.getElementById('canvasElement');
+        const canvasWrapper = document.querySelector('.canvas-wrapper');
+        const ctx = canvasElement.getContext('2d');
+        const startBtn = document.getElementById('startBtn');
+        const statusDisplay = document.getElementById('statusDisplay');
+        const ageDisplay = document.getElementById('ageDisplay');
+        const emotionDisplay = document.getElementById('emotionDisplay');
+
+        let isRunning = false;
+        let videoStream;
+        let displaySize;
+        let detectionInterval;
+
+        // MODELLAR YO'LI (CDN)
+        const MODEL_URL = 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights/';
+
+        // Emotsiya nomlarini o'zbek tiliga tarjima qilish
+        const EMOTION_MAP = {
+            neutral: 'Betaraf 😐',
+            happy: 'Xursand 😊',
+            sad: 'Xafa 😔',
+            angry: 'Gʻazablangan 😡',
+            fearful: 'Qoʻrqqan 😨',
+            disgusted: 'Jirkanish 🤢',
+            surprised: 'Hayratlangan 😮'
+        };
+
+        // --- 1. Canvas va Video O'lchamlarini O'rnatish ---
+        const setupCanvas = () => {
+            const videoWidth = videoElement.videoWidth || 640;
+            const videoHeight = videoElement.videoHeight || 480;
+            
+            canvasElement.width = videoWidth;
+            canvasElement.height = videoHeight;
+            
+            displaySize = { width: videoWidth, height: videoHeight };
+            faceapi.matchDimensions(canvasElement, displaySize);
+            
+            canvasWrapper.style.paddingTop = `${(videoHeight / videoWidth) * 100}%`;
+        };
+        
+        window.addEventListener('resize', setupCanvas);
+
+        // --- 2. AI Modellarini Yuklash (Yangi model qo'shildi) ---
+        const loadModels = async () => {
+            statusDisplay.innerHTML = '<span class="loading-text">Barcha AI Modellar yuklanmoqda... (4 ta model)</span>';
+            startBtn.disabled = true;
+
+            try {
+                // Modellar: 1.Aniqlash, 2.Nuqtalar, 3.Yosh/Jins, 4.Emotsiya
+                await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL); 
+                await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+                await faceapi.nets.ageGenderNet.loadFromUri(MODEL_URL);
+                await faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL); // <-- Yengi!
+                
+                statusDisplay.textContent = '✅ Barcha AI Modellar tayyor!';
+                startBtn.textContent = 'Kamerani Yoqish va Analizni Boshlash';
+                startBtn.disabled = false;
+                startBtn.onclick = startCamera;
+
+            } catch (error) {
+                statusDisplay.textContent = '❌ Modelni yuklash xatosi! Internet yoki CDN muammosi.';
+                console.error("Modellarni yuklashda xato yuz berdi:", error);
+                startBtn.disabled = true;
+            }
+        };
+
+        // --- 3. Kamerani Yoqish ---
+        const startCamera = async () => {
+            if (isRunning) return;
+            statusDisplay.textContent = 'Kamera ruxsati kutilmoqda...';
+            try {
+                videoStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: "user" }
+                });
+                videoElement.srcObject = videoStream;
+                videoElement.style.display = 'block';
+                
+                videoElement.onloadedmetadata = () => {
+                    isRunning = true;
+                    setupCanvas(); 
+                    startBtn.textContent = 'Skanerlashni To\'xtatish';
+                    startBtn.onclick = stopScanning;
+                    statusDisplay.textContent = '📹 Kamera ishga tushdi. Emotsiyani ko\'rsating!';
+                    startDetection(); 
+                };
+
+            } catch (err) {
+                statusDisplay.textContent = '❌ Xato: Kamera ruxsati berilmadi.';
+                isRunning = false;
+            }
+        };
+
+        // --- 4. Yuzni Aniqlash va Analiz (Asosiy Sikl) ---
+        const startDetection = () => {
+            // Har 100ms da skanerlash
+            detectionInterval = setInterval(async () => {
+                if (!isRunning || !videoElement.srcObject) {
+                    clearInterval(detectionInterval);
+                    return;
+                }
+
+                // Barcha funksiyalar (Yosh, Jins, Emotsiya) qo'shildi!
+                const detections = await faceapi.detectAllFaces(
+                    videoElement, 
+                    new faceapi.TinyFaceDetectorOptions({ inputSize: 224 })
+                )
+                .withFaceLandmarks()
+                .withAgeAndGender()
+                .withFaceExpressions(); // <-- Yengi funksiya
+
+                ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+                const resizedDetections = faceapi.resizeResults(detections, displaySize);
+
+                if (resizedDetections.length > 0) {
+                    resizedDetections.forEach(detection => {
+                        const box = detection.detection.box;
+                        const age = detection.age ? Math.round(detection.age) : 'N/A';
+                        const genderText = detection.gender ? (detection.gender === 'male' ? 'Erkak' : 'Ayol') : '';
+
+                        // Emotsiyani aniqlash
+                        let expressionText = 'Nomaʼlum';
+                        if (detection.expressions) {
+                            const expressions = detection.expressions;
+                            const sorted = Object.keys(expressions).map(key => ({
+                                expression: key,
+                                probability: expressions[key]
+                            })).sort((a, b) => b.probability - a.probability);
+                            
+                            const topExpression = sorted[0].expression;
+                            expressionText = EMOTION_MAP[topExpression] || topExpression;
+                        }
+
+                        // Ma'lumot matnini tayyorlash
+                        const infoText = [
+                            `Yosh: ${age}`, 
+                            `Jins: ${genderText}`,
+                            `Emotsiya: ${expressionText}`
+                        ];
+
+                        // Ramka va Nuqtalarni chizish
+                        new faceapi.draw.DrawBox(box, { label: 'Yuz Aniqlangan' }).draw(canvasElement);
+                        faceapi.draw.drawFaceLandmarks(canvasElement, detection);
+                        
+                        // Ma'lumotni ramka ostiga yozish
+                        new faceapi.draw.DrawTextField(infoText, { 
+                            x: box.x, 
+                            y: box.y + box.height + 20 
+                        }).draw(canvasElement);
+                        
+                        // UI panelni yangilash
+                        ageDisplay.textContent = `Taxminiy yosh: ${age} yosh`;
+                        emotionDisplay.textContent = `Hukmron emotsiya: ${expressionText}`;
+                        statusDisplay.textContent = `✅ Toʻliq analiz!`;
+                    });
+                } else {
+                    ageDisplay.textContent = '...';
+                    emotionDisplay.textContent = '...';
+                    statusDisplay.textContent = '❓ Yuz topilmadi. Kameraga toʻgʻri qarang.';
+                }
+            }, 100); 
+        };
+
+        // --- 5. To'xtatish Funksiyasi ---
+        const stopScanning = () => {
+            isRunning = false;
+            clearInterval(detectionInterval); // Intervalni o'chirish
+            if (videoStream) { videoStream.getTracks().forEach(track => track.stop()); }
+            videoElement.style.display = 'none';
+            ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            startBtn.textContent = 'Kamerani Yoqish va Analizni Boshlash';
+            startBtn.onclick = startCamera;
+            statusDisplay.textContent = 'Skanerlash toʻxtatildi.';
+            ageDisplay.textContent = '...';
+            emotionDisplay.textContent = '...';
+        };
+
+        // --- Boshlang'ich Holat ---
+        loadModels();
+    </script>
+</body>
+</html>
